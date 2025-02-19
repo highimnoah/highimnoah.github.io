@@ -69,14 +69,7 @@ hr {
     cursor: pointer;
     width: 64px;
     height: auto;
-    transition: filter 0.5s ease-in-out;
-}
-
-.link-text {
-    position: relative;
-    top: -24px;
-    font-size: 24px;
-    transition: filter 0.5s ease-in-out;
+    transition: filter 0.5s ease-in-out, transform 0.1s ease-in-out;
 }
 
 .divider {
@@ -118,7 +111,8 @@ hr {
 }
 
 #click-button:active,
-#upgrade-button:active {
+#upgrade-button:active,
+.link-img:active {
     transform: scale(0.95);
 }
 
