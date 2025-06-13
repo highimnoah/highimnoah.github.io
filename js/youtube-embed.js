@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const videoId = data.items[0].id.videoId;
                 if (videoId) {
                     const iframe = document.createElement("iframe");
-                    iframe.width = "fit-content";
-                    iframe.height = "100%";
+                    iframe.width = "1280px";
+                    iframe.height = "720px";
                     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&rel=0`;
                     iframe.title = "YouTube Video Player";
                     iframe.frameBorder = "0";
