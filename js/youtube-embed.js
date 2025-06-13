@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then (data => {
             if (data.items && data.items.length > 0) {
-                const videoId = data.item[0].id.videoId;
+                const videoId = data.items[0].id.videoId;
                 if (videoId) {
                     const iframe = document.createElement("iframe");
                     iframe.width = "100%";
