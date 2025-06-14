@@ -4,6 +4,8 @@ const username = document.getElementById("username");
 const statusIcon = document.getElementById("status-icon");
 const statusText = document.getElementById("status-text");
 const activity = document.getElementById("activity");
+const mainUserCard = document.querySelector(".user-card"); // Select the first user-card
+const musicContainer = document.getElementById("music-container");
 
 let presence = null;
 
@@ -46,6 +48,7 @@ socket.onmessage = (event) => {
         statusText.textContent = "";
         activity.textContent = "No activity data available";
         avatar.src = "https://cdn.discordapp.com/avatars/619810098465734666/0481ff1a167a987fa41790d3079ed7d7.webp?size=80";
+        adjustMusicContainerHeight(); // Call after content update
         return;
     }
 
@@ -72,25 +75,91 @@ socket.onmessage = (event) => {
         );
         activity.textContent = currentActivity
             ? `Activity: ${currentActivity.name}`
-            : "No activity data available";
+            : "No activity data available.";
     }
     else {
-        activity.textContent = "No activity data available";
+        activity.textContent = "No activity data available.";
+    }
+
+    let musicDataFound = false;
+    if (presence.activities && presence.activities.length > 0) {
+        const applemusicActivity = presence.activities.find(
+            (act) => act.type === 2 && act.name === "Apple Music"
+        );
+
+        if (applemusicActivity) {
+            const song = applemusicActivity.details;
+            const artistFull = applemusicActivity.state;
+
+            let artist = artistFull;
+            let album = "";
+            const parts = artistFull.split(" — ");
+            if (parts.length >= 2) {
+                artist = parts[0];
+                album = parts.slice(1).join(" — ");
+            }
+
+            let albumArtUrl = "";
+
+            if (applemusicActivity.assets && applemusicActivity.assets.large_image) {
+                let rawImageUrl = applemusicActivity.assets.large_image;
+                console.log("Raw image URL from Lanyard:", rawImageUrl);
+
+                const indicator = "/https/";
+                const indicatorIndex = rawImageUrl.indexOf(indicator);
+
+                if (indicatorIndex !== -1) {
+                    const urlSegment = rawImageUrl.substring(indicatorIndex + indicator.length);
+                    albumArtUrl = "https://" + urlSegment;
+                }
+                else if (rawImageUrl.startsWith("https://")) {
+                    albumArtUrl = rawImageUrl;
+                }
+                else {
+                    console.warn("Could not find a valid HTTP(S) URL in large_image:", rawImageUrl);
+                    albumArtUrl = "";
+                }
+            }
+
+            if (song && artist && albumArtUrl) {
+                musicContainer.innerHTML =
+                    `<div class="track">
+                        <img src="${albumArtUrl}" class="album-art" alt="${album ? album : 'Album Art'}">
+                        <div class="track-name">${song}</div>
+                        ${album ? `<div class="track-album">${album}</div>` : ""}
+                        <div class="track-artist">${artist}</div>
+                    </div>`;
+                musicDataFound = true;
+            }
+            else if (song && artist) {
+                musicContainer.innerHTML =
+                    `<div class="track">
+                        <p>Album art not available.</p>
+                        <div class="track-name">${song}</div>
+                        ${album ? `<div class="track-album">${album}</div>` : ""}
+                        <div class="track-artist">${artist}</div>
+                    </div>`;
+                musicDataFound = true;
+            }
+        }
+
+        if (!musicDataFound) {
+            musicContainer.innerHTML = `<p>Not listening to music right now.</p>`;
+        }
     }
 };
 
-const youtube = document.getElementById("youtube");
-const twitter = document.getElementById("twitter");
-const mega = document.getElementById("mega");
+setInterval(() => {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ op: 3 }));
+    }
+}, 30000);
 
-youtube.addEventListener("click", () => {
-    window.open("https://www.youtube.com/@opiategalore?sub_confirmation=1", "_blank");
-});
+function adjustMusicContainerHeight() {
+    const userCardHeight = mainUserCard.offsetHeight;
+    const musicContainerHeight = Math.max(userCardHeight - 39.8, 100); // Ensure a minimum height of 100px
+    musicContainer.style.height = `${musicContainerHeight}px`;
+}
 
-twitter.addEventListener("click", () => {
-    window.open("https://twitter.com/ctgadse", "_blank");
-});
-
-mega.addEventListener("click", () => {
-    window.open("https://mega.nz/folder/XCx22aYZ#IZykt57yG1StXceL8XqlUQ", "_blank");
-});
+window.addEventListener("resize", adjustMusicContainerHeight);
+window.addEventListener("DOMContentLoaded", adjustMusicContainerHeight);
