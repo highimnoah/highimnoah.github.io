@@ -103,6 +103,7 @@ socket.onmessage = (event) => {
 
             if (applemusicActivity.assets && applemusicActivity.assets.large_image) {
                 let rawImageUrl = applemusicActivity.assets.large_image;
+                console.log("Raw image URL from Lanyard:", rawImageUrl);
 
                 const indicator = "/https/";
                 const indicatorIndex = rawImageUrl.indexOf(indicator);
