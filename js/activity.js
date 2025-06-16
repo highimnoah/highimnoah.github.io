@@ -1,4 +1,5 @@
 const userId = "619810098465734666";
+const favicon = document.getElementById("favicon");
 const avatar = document.getElementById("avatar");
 const username = document.getElementById("username");
 const statusIcon = document.getElementById("status-icon");
@@ -47,13 +48,14 @@ socket.onmessage = (event) => {
         statusIcon.className = "status-icon";
         statusText.textContent = "";
         activity.textContent = "No activity data available";
-        avatar.src = "https://cdn.discordapp.com/avatars/619810098465734666/0481ff1a167a987fa41790d3079ed7d7.webp?size=80";
+        avatar.src = "img/placeholder.png";
         adjustMusicContainerHeight(); // Call after content update
         return;
     }
 
     const user = presence.discord_user;
     avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+    favicon.href = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
     username.textContent = user.username;
 
     let discordStatus = presence.discord_status || "offline";
