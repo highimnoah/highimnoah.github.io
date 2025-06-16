@@ -159,7 +159,7 @@ setInterval(() => {
 
 function adjustMusicContainerHeight() {
     const userCardHeight = mainUserCard.offsetHeight;
-    const musicContainerHeight = Math.max(userCardHeight - 39.8, 100); // Ensure a minimum height of 100px
+    const musicContainerHeight = Math.max(userCardHeight - 40, 100); // Ensure a minimum height of 100px
     musicContainer.style.height = `${musicContainerHeight}px`;
 }
 
