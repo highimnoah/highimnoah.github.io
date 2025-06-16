@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const videoId = data.items[0].id.videoId;
                 if (videoId) {
                     const iframe = document.createElement("iframe");
+                    iframe.className = "youtube-embed";
                     iframe.width = "640px";
                     iframe.height = "360px";
                     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&rel=0`;

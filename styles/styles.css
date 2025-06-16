@@ -226,3 +226,7 @@ body {
     cursor: pointer;
     transform: scale(1.05);
 }
+
+.youtube-embed {
+    border-radius: 15px;
+}
