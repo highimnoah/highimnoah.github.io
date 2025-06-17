@@ -1,16 +1,16 @@
 @font-face {
     font-family: "HelveticaNeueLight";
-    src: url(font/HelveticaNeueLight.otf);
+    src: url(../font/HelveticaNeueLight.otf);
 }
 
 @font-face {
     font-family: "HelveticaNeueMedium";
-    src: url(font/HelveticaNeueMedium.otf);
+    src: url(../font/HelveticaNeueMedium.otf);
 }
 
 @font-face {
     font-family: "HelveticaNeueBold";
-    src: url(font/HelveticaNeueBold.otf);
+    src: url(../font/HelveticaNeueBold.otf);
 }
 
 body {
@@ -225,8 +225,4 @@ body {
 .download-icon:hover {
     cursor: pointer;
     transform: scale(1.05);
-}
-
-.youtube-embed {
-    border-radius: 15px;
 }
