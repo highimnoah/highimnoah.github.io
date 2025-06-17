@@ -1,5 +1,5 @@
 export function getActivity() {
-    const favicon = document.getElementById("favicon");
+    const favicon = document.getElementById("icon");
     const userId = "619810098465734666";
     const avatar = document.getElementById("avatar");
     const username = document.getElementById("username");
