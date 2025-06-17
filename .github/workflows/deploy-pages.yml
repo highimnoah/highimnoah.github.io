@@ -1,0 +1,32 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - vite
+
+# Grant permissions at the workflow level for simplicity for this example.
+# This ensures the GITHUB_TOKEN has the necessary permissions.
+permissions:
+  contents: read # Allow checkout of your repository code
+  pages: write   # Allow deployment to GitHub Pages
+  id-token: write # Required for OIDC authentication to deploy-pages action
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
