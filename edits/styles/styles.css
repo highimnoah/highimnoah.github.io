@@ -1,0 +1,71 @@
+@font-face {
+    font-family: "HelveticaNeueLight";
+    src: url(font/HelveticaNeueLight.otf);
+}
+
+@font-face {
+    font-family: "HelveticaNeueMedium";
+    src: url(font/HelveticaNeueMedium.otf);
+}
+
+@font-face {
+    font-family: "HelveticaNeueBold";
+    src: url(font/HelveticaNeueBold.otf);
+}
+
+body {
+    font-family: "HelveticaNeueLight", sans-serif;
+    background-color: #9496A6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    flex-direction: column;
+}
+
+.main-content-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 15px;
+    gap: 20px;
+    background-color: #F0F0F2;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+    width: fit-content;
+}
+
+.file-table {
+    width: 100%;
+    border-collapse: collapse;
+    max-height: 50vh;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+.file-table-header-row {
+    font-family: "HelveticaNeueLight", sans-serif;
+    font-weight: normal;
+}
+
+.file-table-header-row th {
+    padding: 0px 4vw;
+    padding-bottom: 1vh;
+}
+
+.file-table-body-row td {
+    padding-bottom: 1vh;
+}
+
+.dl-button {
+    width: 32px;
+    height: 32px;
+}
