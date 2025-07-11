@@ -1,0 +1,23 @@
+.status-icon {
+  display: inline-block;
+  width: 10px; /* Adjust size as needed */
+  height: 10px; /* Adjust size as needed */
+  border-radius: 50%;
+  margin-right: 5px; /* Space between icon and text */
+}
+
+.status-online {
+  background-color: #3ba55d; /* Discord green */
+}
+
+.status-idle {
+  background-color: #faa61a; /* Discord yellow/orange */
+}
+
+.status-dnd {
+  background-color: #ed4245; /* Discord red */
+}
+
+.status-offline {
+  background-color: #747f8d; /* Discord grey */
+}
