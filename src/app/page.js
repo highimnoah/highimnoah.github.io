@@ -16,6 +16,7 @@ export default function Home() {
   const [musicData, setMusicData] = useState(null);
   const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
   const [showMusicContainer, setShowMusicContainer] = useState(false);
+  const [shouldRenderMusicContainer, setShouldRenderMusicContainer] = useState(false);
 
   const mainUserCardRef = useRef(null);
   const musicContainerRef = useRef(null);
@@ -46,6 +47,7 @@ export default function Home() {
     const ease = "power3.out";
 
     if (showMusicContainer) {
+      setShouldRenderMusicContainer(true);
       gsap.fromTo(
         wrapper,
         { height: 0, opacity: 0 },
@@ -62,6 +64,9 @@ export default function Home() {
         opacity: 0,
         duration,
         ease,
+        onComplete: () => {
+          setShouldRenderMusicContainer(false);
+        },
       });
     }
   }, [showMusicContainer]);
@@ -249,7 +254,7 @@ export default function Home() {
                   ref={musicContainerAnimRef}
                   style={{ overflow: "hidden", height: "fit-content" }}
                 >
-                  {showMusicContainer && (
+                  {shouldRenderMusicContainer && (
                     <section>
                       <div
                         id="music-container"
@@ -270,7 +275,7 @@ export default function Home() {
                             <div>{musicData.artist}</div>
                           </div>
                         ) : (
-                          <p>Not listening to music right now.</p>
+                          <p>...</p>
                         )}
                       </div>
                     </section>
