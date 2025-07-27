@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 import Head from 'next/head';
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css"
-import Image from 'next/image';
+import Link from "next/link";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
@@ -338,13 +338,13 @@ export default function Home() {
               threshold={0.2}
               delay={0.4}
             >
-              <a
+              <Link
                 className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-12 px-4 w-20 sm:w-25 sm:scale-100 scale-120 sm:m-0 sm:mb-2 m-1"
-                href="https://pixeldrain.com/d/RDrPaMcL"
-                target="_blank"
+                href="/archive"
+                target="_self"
               >
                 Archive
-              </a>
+              </Link>
             </AnimatedContent>
 
             <AnimatedContent
