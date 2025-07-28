@@ -340,26 +340,11 @@ export default function Home() {
             >
               <Link
                 className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-12 px-4 w-20 sm:w-25 sm:scale-100 scale-120 sm:m-0 sm:mb-2 m-1"
-                href="/archive"
-                target="_self"
+                href="https://pixeldrain.com/d/RDrPaMcL"
+                target="_blank"
               >
                 Archive
               </Link>
-            </AnimatedContent>
-
-            <AnimatedContent
-              distance={50}
-              direction="vertical"
-              reverse={false}
-              duration={1.2}
-              ease="power3.out"
-              initialOpacity={0}
-              animateOpacity
-              scale={1}
-              threshold={0.2}
-              delay={0.4}
-            >
-
             </AnimatedContent>
           </div>
         </main>
