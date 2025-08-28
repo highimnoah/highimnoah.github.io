@@ -1,26 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import Head from 'next/head';
+import Head from "next/head";
 import AnimatedContent from "../../components/AnimatedContent";
-import "./OnlineStatus.css"
+import "./OnlineStatus.css";
 import Link from "next/link";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
-  const [avatarUrl, setAvatarUrl] = useState("https://cdn.discordapp.com/avatars/619810098465734666/9ce1bc5c251c401107a6b2c0b43981f6.png");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [statusClass, setStatusClass] = useState("status-offline");
   const [statusText, setStatusText] = useState("");
   const [activityText, setActivityText] = useState("—");
-  const [musicData, setMusicData] = useState(null);
+  const [musicData, setMusicData] = useState(undefined);
   const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
-  const [showMusicContainer, setShowMusicContainer] = useState(false);
-  const [shouldRenderMusicContainer, setShouldRenderMusicContainer] = useState(false);
 
-  const mainUserCardRef = useRef(null);
-  const musicContainerRef = useRef(null);
-  const musicContainerAnimRef = useRef(null);
   const socketRef = useRef(null);
 
   const userId = "619810098465734666";
@@ -29,47 +24,36 @@ export default function Home() {
     online: "status-online",
     idle: "status-idle",
     dnd: "status-dnd",
-    offline: "status-offline"
+    offline: "status-offline",
   };
 
-  const adjustMusicContainerHeight = () => {
-    if (mainUserCardRef.current && musicContainerRef.current) {
-      const userCardHeight = mainUserCardRef.current.offsetHeight;
-      musicContainerRef.current.style.height = `${userCardHeight}px`;
-    }
+  const [progress, setProgress] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const formatTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   useEffect(() => {
-    const wrapper = musicContainerAnimRef.current;
-    if (!wrapper) return;
+    if (!musicData?.start || !musicData?.end) return;
 
-    const duration = 1.2;
-    const ease = "power3.out";
+    const updateProgress = () => {
+      const now = Date.now();
+      const total = musicData.end - musicData.start;
+      const passed = now - musicData.start;
+      setProgress(Math.min(passed / total, 1));
+      setElapsed(Math.min(passed, total));
+      setDuration(total);
+    };
 
-    if (showMusicContainer) {
-      setShouldRenderMusicContainer(true);
-      gsap.fromTo(
-        wrapper,
-        { height: 0, opacity: 0 },
-        {
-          height: 184,
-          opacity: 1,
-          duration,
-          ease,
-        }
-      );
-    } else {
-      gsap.to(wrapper, {
-        height: 0,
-        opacity: 0,
-        duration,
-        ease,
-        onComplete: () => {
-          setShouldRenderMusicContainer(false);
-        },
-      });
-    }
-  }, [showMusicContainer]);
+    updateProgress();
+    const interval = setInterval(updateProgress, 1000);
+    return () => clearInterval(interval);
+  }, [musicData]);
 
   useEffect(() => {
     const socket = new WebSocket("wss://api.lanyard.rest/socket");
@@ -79,63 +63,42 @@ export default function Home() {
       socket.send(
         JSON.stringify({
           op: 2,
-          d: {
-            subscribe_to_ids: [userId]
-          }
+          d: { subscribe_to_ids: [userId] },
         })
       );
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-
       if (!data.t || !data.d) return;
 
       let presence = null;
-      if (data.t === "INIT_STATE") {
-        presence = data.d[userId];
-      } else if (data.t === "PRESENCE_UPDATE") {
-        presence = data.d;
-      } else {
-        return;
-      }
+      if (data.t === "INIT_STATE") presence = data.d[userId];
+      else if (data.t === "PRESENCE_UPDATE") presence = data.d;
+      else return;
 
-      if (!presence || !presence.discord_user) {
-        setUsername("User data not found");
-        setStatusClass("status-offline");
-        setStatusText("");
-        setActivityText("No activity data available");
-        setAvatarUrl("https://cdn.discordapp.com/avatars/619810098465734666/0481ff1a167a987fa41790d3079ed7d7.webp?size=80");
-        setFaviconUrl("/avatar.png");
-        setMusicData(null);
-        return;
-      }
+      if (!presence?.discord_user) return;
 
       const user = presence.discord_user;
-      setAvatarUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`);
-      setFaviconUrl(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`);
+      setAvatarUrl(
+        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      );
+      setFaviconUrl(
+        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      );
       setUsername(user.username);
 
-      let discordStatus = presence.discord_status || "offline";
-      let newStatusClass = "status-icon";
-      if (statusColors[discordStatus]) {
-        newStatusClass += ` ${statusColors[discordStatus]}`;
-      }
-      setStatusClass(newStatusClass);
-      setStatusText(discordStatus.charAt(0).toUpperCase() + discordStatus.slice(1));
+      const discordStatus = presence.discord_status || "offline";
+      setStatusClass(`status-icon ${statusColors[discordStatus] || ""}`);
+      setStatusText(
+        discordStatus.charAt(0).toUpperCase() + discordStatus.slice(1)
+      );
 
-      if (presence.activities && presence.activities.length > 0) {
-        const currentActivity = presence.activities.find(
-          (act) => act.name && act.name !== "Custom Status"
-        );
-        setActivityText(
-          currentActivity ? `${currentActivity.name}` : "No activity data available."
-        );
-      } else {
-        setActivityText("No activity data available.");
-      }
+      const currentActivity = presence.activities?.find(
+        (act) => act.name && act.name !== "Custom Status"
+      );
+      setActivityText(currentActivity ? currentActivity.name : "—");
 
-      let newMusicData = null;
       const applemusicActivity = presence.activities?.find(
         (act) => act.type === 2 && act.name === "Apple Music"
       );
@@ -146,7 +109,7 @@ export default function Home() {
         let artist = artistFull;
         let album = "";
         const parts = artistFull?.split(" — ");
-        if (parts && parts.length >= 2) {
+        if (parts?.length >= 2) {
           artist = parts[0];
           album = parts.slice(1).join(" — ");
         }
@@ -155,200 +118,124 @@ export default function Home() {
         if (applemusicActivity.assets?.large_image) {
           let rawImageUrl = applemusicActivity.assets.large_image;
           const indicator = "/https/";
-          const indicatorIndex = rawImageUrl.indexOf(indicator);
-
-          if (indicatorIndex !== -1) {
-            const urlSegment = rawImageUrl.substring(indicatorIndex + indicator.length);
-            albumArtUrl = "https://" + urlSegment;
-          } else if (rawImageUrl.startsWith("https://")) {
-            albumArtUrl = rawImageUrl;
-          } else {
-            console.warn("Could not find a valid HTTP(S) URL in large_image:", rawImageUrl);
-          }
+          const idx = rawImageUrl.indexOf(indicator);
+          if (idx !== -1)
+            albumArtUrl = "https://" + rawImageUrl.substring(idx + 7);
+          else if (rawImageUrl.startsWith("https://")) albumArtUrl = rawImageUrl;
         }
+
+        const start = applemusicActivity.timestamps?.start;
+        const end = applemusicActivity.timestamps?.end;
 
         if (song && artist) {
-          newMusicData = { song, artist, album, albumArtUrl };
+          setMusicData({ song, artist, album, albumArtUrl, start, end });
         }
-      }
-      setMusicData(newMusicData);
-      if (!newMusicData) {
-        setShowMusicContainer(false);
+      } else {
+        setMusicData(null);
       }
     };
 
-    const heartbeatInterval = setInterval(() => {
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+    const heartbeat = setInterval(() => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify({ op: 3 }));
       }
     }, 30000);
 
-    window.addEventListener("resize", adjustMusicContainerHeight);
-
-    const initialAdjustTimeout = setTimeout(adjustMusicContainerHeight, 0);
-
     return () => {
-      clearInterval(heartbeatInterval);
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-      window.removeEventListener("resize", adjustMusicContainerHeight);
-      clearTimeout(initialAdjustTimeout);
+      clearInterval(heartbeat);
+      socketRef.current?.close();
     };
   }, []);
-
-  useEffect(() => {
-    adjustMusicContainerHeight();
-  }, [musicData, username]);
 
   return (
     <>
       <Head>
         <link rel="icon" href={faviconUrl} />
       </Head>
-      <div className="font-[family-name:var(--font-geist-sans)] antialiased">
-        <main className="flex flex-col gap-[32px] row-start-2 items-center justify-center min-h-screen">
-          <div className="flex gap-4 items-center justify-center flex-col">
-            <AnimatedContent
-              distance={50}
-              direction="vertical"
-              reverse={false}
-              duration={1.2}
-              ease="power3.out"
-              initialOpacity={0}
-              animateOpacity
-              scale={1}
-              threshold={0.2}
-              delay={0.4}
-            >
-              <div className="flex flex-col gap-5 items-center justify-center text-center">
-                <section>
-                  <div ref={mainUserCardRef} className="flex w-fit">
-                    <div className="flex flex-col items-center">
-                      <img src={avatarUrl} alt="Avatar" id="avatar" className="rounded-full m-0 mb-2 border-2"/>
-                      <div>
-                        <div>
-                          <span id="username">{username}</span>
-                        </div>
-                        <div id="user-status">
-                          <span id="status-icon" className={statusClass}></span>
-                          <span id="status-text">{statusText}</span>
-                        </div>
-                        <p
-                          id="activity"
-                          className={activityText === "Apple Music" ? "cursor-pointer hover:underline hover:scale-105 transition-transform duration-300 ease-out" : ""}
-                          onClick={() => {
-                            if (activityText === "Apple Music") {
-                              setShowMusicContainer((prev) => !prev);
-                            }
-                          }}
-                        >
-                          {activityText}
-                        </p>
+      <main className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground px-4">
+        <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-3xl">
+          {/* User Card */}
+          <AnimatedContent distance={30} direction="vertical" duration={1}>
+            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full">
+              <img
+                src={avatarUrl}
+                alt="Avatar"
+                className="w-24 h-24 rounded-full border-2 shadow-md"
+              />
+              <h1 className="text-xl font-semibold">{username}</h1>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <span className={statusClass}></span>
+                <span>{statusText}</span>
+              </div>
+              <p className="mt-2 text-sm text-gray-500">{activityText}</p>
+            </div>
+          </AnimatedContent>
+
+          {/* Music Section */}
+          <section className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full min-h-[280px]">
+            {musicData === undefined ? (
+              <p className="text-sm text-gray-400">Fetching data...</p>
+            ) : musicData ? (
+              <>
+                {musicData.albumArtUrl && (
+                  <img
+                    src={musicData.albumArtUrl}
+                    className="rounded-xl w-32 h-32 border-2"
+                    alt={musicData.album || "Album Art"}
+                  />
+                )}
+                <div className="text-center">
+                  <h2 className="text-md font-semibold text-white">{musicData.song}</h2>
+                  {musicData.album && (
+                    <p className="text-sm text-gray-400">{musicData.album}</p>
+                  )}
+                  <p className="text-sm text-gray-400">{musicData.artist}</p>
+                </div>
+                {musicData.start && musicData.end && (
+                  <div className="w-full flex flex-col mt-2">
+                    <div className="flex items-center gap-2 w-full">
+                      <span className="text-xs text-gray-500">{formatTime(elapsed)}</span>
+                      <div className="flex-1 bg-gray-300 rounded-full h-2">
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${progress * 100}%` }}
+                        />
                       </div>
+                      <span className="text-xs text-gray-500">{formatTime(duration)}</span>
                     </div>
                   </div>
-                </section>
-                <section
-                  id="music-wrapper"
-                  ref={musicContainerAnimRef}
-                  style={{ overflow: "hidden", height: "fit-content" }}
-                >
-                  {shouldRenderMusicContainer && (
-                    <section>
-                      <div
-                        id="music-container"
-                        className="flex w-fit"
-                      >
-                        {musicData ? (
-                          <div className="flex flex-col items-center h-fit">
-                            {musicData.albumArtUrl && (
-                              <img
-                                src={musicData.albumArtUrl}
-                                className="rounded-2xl m-0 mb-2 border-2"
-                                alt={musicData.album ? musicData.album : 'Album Art'}
-                              />
-                            )}
-                            {!musicData.albumArtUrl && <p>Album art not available.</p>}
-                            <div>{musicData.song}</div>
-                            {musicData.album && <div>{musicData.album}</div>}
-                            <div>{musicData.artist}</div>
-                          </div>
-                        ) : (
-                          <p>...</p>
-                        )}
-                      </div>
-                    </section>
-                  )}
-                </section>
-              </div>
-            </AnimatedContent>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-gray-400">Not listening to anything right now</p>
+            )}
+          </section>
+        </div>
 
-            <AnimatedContent
-              distance={50}
-              direction="vertical"
-              reverse={false}
-              duration={1.2}
-              ease="power3.out"
-              initialOpacity={0}
-              animateOpacity
-              scale={1}
-              threshold={0.2}
-              delay={0.3}
-            >
-              <a
-                className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-12 px-4 w-20 sm:w-25 sm:scale-100 scale-120 sm:m-0 m-1"
-                href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
-                target="_blank"
-              >
-                YouTube
-              </a>
-            </AnimatedContent>
-
-            <AnimatedContent
-              distance={50}
-              direction="vertical"
-              reverse={false}
-              duration={1.2}
-              ease="power3.out"
-              initialOpacity={0}
-              animateOpacity
-              scale={1}
-              threshold={0.2}
-              delay={0.35}
-            >
-              <a
-                className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-12 px-4 w-20 sm:w-25 sm:scale-100 scale-120 sm:m-0 m-1"
-                href="https://twitter.com/ctgadse"
-                target="_blank"
-              >
-                Twitter
-              </a>
-            </AnimatedContent>
-
-            <AnimatedContent
-              distance={50}
-              direction="vertical"
-              reverse={false}
-              duration={1.2}
-              ease="power3.out"
-              initialOpacity={0}
-              animateOpacity
-              scale={1}
-              threshold={0.2}
-              delay={0.4}
-            >
-              <Link
-                className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-12 px-4 w-20 sm:w-25 sm:scale-100 scale-120 sm:m-0 sm:mb-2 m-1"
-                href="https://pixeldrain.com/d/RDrPaMcL"
-                target="_blank"
-              >
-                Archive
-              </Link>
-            </AnimatedContent>
-          </div>
-        </main>
-      </div>
+        <div className="flex gap-3 mt-6">
+          <a
+            href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
+            target="_blank"
+            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+          >
+            YouTube
+          </a>
+          <a
+            href="https://twitter.com/ctgadse"
+            target="_blank"
+            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+          >
+            Twitter
+          </a>
+          <Link
+            href="https://pixeldrain.com/d/RDrPaMcL"
+            target="_blank"
+            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+          >
+            Archive
+          </Link>
+        </div>
+      </main>
     </>
   );
 }
