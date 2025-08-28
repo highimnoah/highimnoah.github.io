@@ -172,69 +172,73 @@ export default function Home() {
           </AnimatedContent>
 
           {/* Music Section */}
-          <section className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full min-h-[280px]">
-            {musicData === undefined ? (
-              <p className="text-sm text-gray-400">Fetching data...</p>
-            ) : musicData ? (
-              <>
-                {musicData.albumArtUrl && (
-                  <img
-                    src={musicData.albumArtUrl}
-                    className="rounded-xl w-32 h-32 border-2"
-                    alt={musicData.album || "Album Art"}
-                  />
-                )}
-                <div className="text-center">
-                  <h2 className="text-md font-semibold text-white">{musicData.song}</h2>
-                  {musicData.album && (
-                    <p className="text-sm text-gray-400">{musicData.album}</p>
+          <AnimatedContent distance={30} direction="vertical" duration={1}>
+            <section className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full min-h-[280px]">
+              {musicData === undefined ? (
+                <p className="text-sm text-gray-400">Fetching data...</p>
+              ) : musicData ? (
+                <>
+                  {musicData.albumArtUrl && (
+                    <img
+                      src={musicData.albumArtUrl}
+                      className="rounded-xl w-32 h-32 border-2"
+                      alt={musicData.album || "Album Art"}
+                    />
                   )}
-                  <p className="text-sm text-gray-400">{musicData.artist}</p>
-                </div>
-                {musicData.start && musicData.end && (
-                  <div className="w-full flex flex-col mt-2">
-                    <div className="flex items-center gap-2 w-full">
-                      <span className="text-xs text-gray-500">{formatTime(elapsed)}</span>
-                      <div className="flex-1 bg-gray-300 rounded-full h-2">
-                        <div
-                          className="bg-green-500 h-2 rounded-full"
-                          style={{ width: `${progress * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500">{formatTime(duration)}</span>
-                    </div>
+                  <div className="text-center">
+                    <h2 className="text-md font-semibold text-white">{musicData.song}</h2>
+                    {musicData.album && (
+                      <p className="text-sm text-gray-400">{musicData.album}</p>
+                    )}
+                    <p className="text-sm text-gray-400">{musicData.artist}</p>
                   </div>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-gray-400">Not listening to anything right now</p>
-            )}
-          </section>
+                  {musicData.start && musicData.end && (
+                    <div className="w-full flex flex-col mt-2">
+                      <div className="flex items-center gap-2 w-full">
+                        <span className="text-xs text-gray-500">{formatTime(elapsed)}</span>
+                        <div className="flex-1 bg-gray-300 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: `${progress * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500">{formatTime(duration)}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">Not listening to anything right now</p>
+              )}
+            </section>
+          </AnimatedContent>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <a
-            href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
-            target="_blank"
-            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
-          >
-            YouTube
-          </a>
-          <a
-            href="https://twitter.com/ctgadse"
-            target="_blank"
-            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
-          >
-            Twitter
-          </a>
-          <Link
-            href="https://pixeldrain.com/d/RDrPaMcL"
-            target="_blank"
-            className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
-          >
-            Archive
-          </Link>
-        </div>
+        <AnimatedContent distance={30} direction="vertical" duration={1}>
+          <div className="flex gap-3 mt-6">
+            <a
+              href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
+              target="_blank"
+              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+            >
+              YouTube
+            </a>
+            <a
+              href="https://twitter.com/ctgadse"
+              target="_blank"
+              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+            >
+              Twitter
+            </a>
+            <Link
+              href="https://pixeldrain.com/d/RDrPaMcL"
+              target="_blank"
+              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+            >
+              Archive
+            </Link>
+          </div>
+        </AnimatedContent>
       </main>
     </>
   );
