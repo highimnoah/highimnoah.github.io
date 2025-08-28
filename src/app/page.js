@@ -9,7 +9,7 @@ import Link from "next/link";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
-  const [avatarUrl, setAvatarUrl] = useState("https://cdn.discordapp.com/avatars/619810098465734666/0481ff1a167a987fa41790d3079ed7d7.webp?size=80");
+  const [avatarUrl, setAvatarUrl] = useState("https://cdn.discordapp.com/avatars/619810098465734666/9ce1bc5c251c401107a6b2c0b43981f6.png");
   const [statusClass, setStatusClass] = useState("status-offline");
   const [statusText, setStatusText] = useState("");
   const [activityText, setActivityText] = useState("—");
