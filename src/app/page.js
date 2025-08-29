@@ -208,7 +208,7 @@ export default function Home() {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-gray-400">Not listening to anything right now</p>
+                <p className="text-sm text-gray-400 text-center">Not listening to anything right now</p>
               )}
             </section>
           </AnimatedContent>
