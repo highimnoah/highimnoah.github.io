@@ -105,14 +105,8 @@ export default function Home() {
 
       if (applemusicActivity) {
         const song = applemusicActivity.details;
-        const artistFull = applemusicActivity.state;
-        let artist = artistFull;
-        let album = "";
-        const parts = artistFull?.split(" — ");
-        if (parts?.length >= 2) {
-          artist = parts[0];
-          album = parts.slice(1).join(" — ");
-        }
+        const artist = applemusicActivity.state;
+        const album = applemusicActivity.assets?.large_text || "";
 
         let albumArtUrl = "";
         if (applemusicActivity.assets?.large_image) {
@@ -152,28 +146,30 @@ export default function Home() {
       <Head>
         <link rel="icon" href={faviconUrl} />
       </Head>
-      <main className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground px-4">
+      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-slate-100 px-4">
         <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-3xl">
           {/* User Card */}
           <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full">
+            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-2xl bg-slate-800/70 shadow-lg min-w-[200px] max-w-[220px] flex-1 h-full">
               <img
                 src={avatarUrl}
                 alt="Avatar"
                 className="w-24 h-24 rounded-full border-2 shadow-md"
               />
-              <h1 className="text-xl font-semibold">{username}</h1>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
+              <h1 className="text-xl font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
+                {username}
+              </h1>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
                 <span className={statusClass}></span>
                 <span>{statusText}</span>
               </div>
-              <p className="mt-2 text-sm text-gray-500">{activityText}</p>
+              <p className="mt-2 text-sm text-slate-400">{activityText}</p>
             </div>
           </AnimatedContent>
 
           {/* Music Section */}
           <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <section className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-gray-800/50 shadow-md min-w-[200px] max-w-[220px] flex-1 h-full min-h-[280px]">
+            <section className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-2xl bg-slate-800/70 shadow-lg min-w-[200px] max-w-[220px] flex-1 h-full">
               {musicData === undefined ? (
                 <p className="text-sm text-gray-400">Fetching data...</p>
               ) : musicData ? (
@@ -186,23 +182,29 @@ export default function Home() {
                     />
                   )}
                   <div className="text-center">
-                    <h2 className="text-md font-semibold text-white">{musicData.song}</h2>
+                    <h2 className="text-md font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
+                      {musicData.song}
+                    </h2>
                     {musicData.album && (
-                      <p className="text-sm text-gray-400">{musicData.album}</p>
+                      <p className="text-sm text-slate-400">{musicData.album}</p>
                     )}
-                    <p className="text-sm text-gray-400">{musicData.artist}</p>
+                    <p className="text-sm text-slate-400">{musicData.artist}</p>
                   </div>
                   {musicData.start && musicData.end && (
                     <div className="w-full flex flex-col mt-2">
                       <div className="flex items-center gap-2 w-full">
-                        <span className="text-xs text-gray-500">{formatTime(elapsed)}</span>
-                        <div className="flex-1 bg-gray-300 rounded-full h-2">
+                        <span className="text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-left">
+                          {formatTime(elapsed)}
+                        </span>
+                        <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
                           <div
-                            className="bg-green-500 h-2 rounded-full"
+                            className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.7)] transition-all duration-300"
                             style={{ width: `${progress * 100}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500">{formatTime(duration)}</span>
+                        <span className="text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-right">
+                          {formatTime(duration)}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -219,21 +221,21 @@ export default function Home() {
             <a
               href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
               target="_blank"
-              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               YouTube
             </a>
             <a
               href="https://twitter.com/ctgadse"
               target="_blank"
-              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               Twitter
             </a>
             <Link
               href="https://pixeldrain.com/d/RDrPaMcL"
               target="_blank"
-              className="px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-sm"
+              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               Archive
             </Link>
