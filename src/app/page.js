@@ -157,7 +157,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <link rel="icon" href={faviconUrl} />
+        <link rel="icon" href="public\icon.png" />
       </Head>
       <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-slate-100 px-4">
         <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-3xl">
@@ -246,8 +246,8 @@ export default function Home() {
               Twitter
             </a>
             <Link
-              href="https://pixeldrain.com/d/RDrPaMcL"
-              target="_blank"
+              href="/archive"
+              target="_self"
               className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               Archive
