@@ -100,13 +100,26 @@ export default function Home() {
       setActivityText(currentActivity ? currentActivity.name : "—");
 
       const applemusicActivity = presence.activities?.find(
-        (act) => act.type === 2 && act.name === "Apple Music"
+        (act) => act.type === 2 && act.name === "Apple Music" || act.name === "Windows Media Player" || act.name === "Cider"
       );
 
       if (applemusicActivity) {
         const song = applemusicActivity.details;
-        const artist = applemusicActivity.state;
-        const album = applemusicActivity.assets?.large_text || "";
+        let artist = "";
+        let album = "";
+
+        if (applemusicActivity.state.includes("—")) {
+          const artistFull = applemusicActivity.state;
+          const parts = artistFull.split("—");
+          if (parts.length >= 2) {
+            artist = parts[0].trim();
+            album = parts.slice(1).join("—").trim();
+          }
+        } else {
+          artist = applemusicActivity.state;
+          album = applemusicActivity.assets?.large_text || "";
+        }
+
 
         let albumArtUrl = "";
         if (applemusicActivity.assets?.large_image) {
