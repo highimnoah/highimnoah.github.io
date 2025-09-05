@@ -16,6 +16,10 @@ export default function Home() {
   const [musicData, setMusicData] = useState(undefined);
   const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
 
+  const formatForLastfm = (text) => {
+      return text.replace(/\s+/g, "+");
+    };
+
   const socketRef = useRef(null);
 
   const userId = "619810098465734666";
@@ -220,6 +224,16 @@ export default function Home() {
                         </span>
                       </div>
                     </div>
+                  )}
+                  {musicData && (
+                    <a
+                      href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
+                    >
+                      View on Last.fm
+                    </a>
                   )}
                 </>
               ) : (
