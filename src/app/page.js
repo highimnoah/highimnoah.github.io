@@ -6,6 +6,7 @@ import Head from "next/head";
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css";
 import Link from "next/link";
+import Starfield from "../../components/Starfield";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
@@ -17,8 +18,8 @@ export default function Home() {
   const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
 
   const formatForLastfm = (text) => {
-      return text.replace(/\s+/g, "+");
-    };
+    return text.replace(/\s+/g, "+");
+  };
 
   const socketRef = useRef(null);
 
@@ -163,7 +164,8 @@ export default function Home() {
       <Head>
         <link rel="icon" href="public\icon.png" />
       </Head>
-      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-slate-100 px-4">
+      <Starfield />
+      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900/80 text-slate-100 px-4">
         <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-3xl">
           {/* User Card */}
           <AnimatedContent distance={30} direction="vertical" duration={1}>
