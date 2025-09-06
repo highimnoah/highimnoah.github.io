@@ -40,15 +40,19 @@ export default function Archive() {
                 </AnimatedContent>
 
                 <AnimatedContent distance={30} direction="vertical" duration={1}>
-                    <div className="flex flex-col gap-4 w-full max-w-lg max-h-[60vh] overflow-y-auto pr-2">
+                    <div className="flex flex-col gap-4 w-full max-w-lg max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-2">
                         {songs.map((track, i) => (
                             <button
                                 key={i}
                                 onClick={() => handleDownload(track)}
-                                className="w-full text-left px-4 py-3 rounded-xl bg-slate-800/70 hover:bg-slate-700 transition shadow-md cursor-pointer"
+                                className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-slate-800/70 hover:bg-slate-700 transition shadow-md cursor-pointer"
                             >
-                                <p className="font-medium text-indigo-300 hover:text-indigo-200">{track.title}</p>
-                                <p className="text-xs text-slate-500">Choose format to download</p>
+                                <p className="font-medium text-indigo-300 hover:text-indigo-200 text-sm sm:text-base">
+                                    {track.title}
+                                </p>
+                                <p className="text-[11px] sm:text-xs text-slate-500">
+                                    Choose format to download
+                                </p>
                             </button>
                         ))}
                     </div>
@@ -66,21 +70,21 @@ export default function Archive() {
                 </AnimatedContent>
 
                 {selectedTrack && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                        <div className="bg-slate-800 p-6 rounded-2xl shadow-lg text-center w-80">
-                            <h2 className="text-lg font-semibold mb-4 text-indigo-300">
+                    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-4">
+                        <div className="bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-lg text-center w-full max-w-xs sm:max-w-sm">
+                            <h2 className="text-base sm:text-lg font-semibold mb-4 text-indigo-300">
                                 Download {selectedTrack.title} as:
                             </h2>
-                            <div className="flex gap-4 justify-center">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                                 <button
                                     onClick={() => downloadFile("wav")}
-                                    className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white transition cursor-pointer"
+                                    className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white transition cursor-pointer w-full sm:w-auto"
                                 >
                                     .wav
                                 </button>
                                 <button
                                     onClick={() => downloadFile("mp3")}
-                                    className="px-4 py-2 rounded-xl bg-violet-500 hover:bg-violet-400 text-white transition cursor-pointer"
+                                    className="px-4 py-2 rounded-xl bg-violet-500 hover:bg-violet-400 text-white transition cursor-pointer w-full sm:w-auto"
                                 >
                                     .mp3
                                 </button>

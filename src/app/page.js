@@ -165,30 +165,31 @@ export default function Home() {
         <link rel="icon" href="public\icon.png" />
       </Head>
       <Starfield />
-      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900/80 text-slate-100 px-4">
-        <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-3xl">
+      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900/80 text-slate-100 px-3 sm:px-6">
+        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 sm:gap-8 w-full max-w-3xl">
           {/* User Card */}
           <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-2xl bg-slate-800/70 shadow-lg min-w-[200px] max-w-[220px] flex-1 h-full">
+            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 sm:p-6 rounded-2xl bg-slate-800/70 shadow-lg w-full md:max-w-[320px] min-w-[220px] flex-1 min-h-[280px] h-336px sm:min-h-[336px]">
               <img
                 src={avatarUrl}
                 alt="Avatar"
-                className="w-24 h-24 rounded-full border-2 shadow-md"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 shadow-md"
               />
-              <h1 className="text-xl font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
+              <h1 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
                 {username}
               </h1>
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
                 <span className={statusClass}></span>
                 <span>{statusText}</span>
               </div>
-              <p className="mt-2 text-sm text-slate-400">{activityText}</p>
+              <p className="mt-2 text-xs sm:text-sm text-slate-400">{activityText}</p>
             </div>
           </AnimatedContent>
 
-          {/* Music Section */}
+
+          {/* Music Card */}
           <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <section className="flex flex-col items-center justify-center gap-2 text-center p-4 rounded-2xl bg-slate-800/70 shadow-lg min-w-[200px] max-w-[220px] flex-1 h-full">
+            <section className="flex flex-col items-center justify-center gap-2 text-center p-4 sm:p-6 rounded-2xl bg-slate-800/70 shadow-lg w-full md:max-w-[260px] min-w-[220px] flex-1 min-h-[280px] h-336px sm:min-h-[336px]">
               {musicData === undefined ? (
                 <p className="text-sm text-gray-400">Fetching data...</p>
               ) : musicData ? (
@@ -196,23 +197,23 @@ export default function Home() {
                   {musicData.albumArtUrl && (
                     <img
                       src={musicData.albumArtUrl}
-                      className="rounded-xl w-32 h-32 border-2"
+                      className="rounded-xl w-28 h-28 sm:w-32 sm:h-32 border-2"
                       alt={musicData.album || "Album Art"}
                     />
                   )}
                   <div className="text-center">
-                    <h2 className="text-md font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
+                    <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
                       {musicData.song}
                     </h2>
                     {musicData.album && (
-                      <p className="text-sm text-slate-400">{musicData.album}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">{musicData.album}</p>
                     )}
-                    <p className="text-sm text-slate-400">{musicData.artist}</p>
+                    <p className="text-xs sm:text-sm text-slate-400">{musicData.artist}</p>
                   </div>
                   {musicData.start && musicData.end && (
                     <div className="w-full flex flex-col mt-2">
                       <div className="flex items-center gap-2 w-full">
-                        <span className="text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-left">
+                        <span className="text-[10px] sm:text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-left">
                           {formatTime(elapsed)}
                         </span>
                         <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
@@ -221,7 +222,7 @@ export default function Home() {
                             style={{ width: `${progress * 100}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-right">
+                        <span className="text-[10px] sm:text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-right">
                           {formatTime(duration)}
                         </span>
                       </div>
@@ -232,7 +233,7 @@ export default function Home() {
                       href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
+                      className="mt-2 px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
                     >
                       View on Last.fm
                     </a>
@@ -246,25 +247,25 @@ export default function Home() {
         </div>
 
         <AnimatedContent distance={30} direction="vertical" duration={1}>
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mt-6 justify-center">
             <a
               href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
               target="_blank"
-              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
+              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               YouTube
             </a>
             <a
               href="https://twitter.com/ctgadse"
               target="_blank"
-              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
+              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               Twitter
             </a>
             <Link
               href="/archive"
               target="_self"
-              className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-sm text-indigo-300 hover:text-indigo-200 transition"
+              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               Archive
             </Link>
