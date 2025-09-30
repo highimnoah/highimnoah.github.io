@@ -10,7 +10,7 @@ import Starfield from "../../components/Starfield";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
-  const [avatarUrl, setAvatarUrl] = useState("https://cdn.discordapp.com/avatars/619810098465734666/9ce1bc5c251c401107a6b2c0b43981f6.png");
+  const [avatarUrl, setAvatarUrl] = useState("/placeholder.png");
   const [statusClass, setStatusClass] = useState("status-offline");
   const [statusText, setStatusText] = useState("");
   const [activityText, setActivityText] = useState("—");

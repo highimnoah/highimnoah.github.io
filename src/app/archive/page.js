@@ -33,11 +33,16 @@ export default function Archive() {
             </Head>
             <Starfield />
             <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900/80 text-slate-100 px-4">
-                <AnimatedContent distance={30} direction="vertical" duration={1}>
-                    <h1 className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
-                        Edit Archive
-                    </h1>
-                </AnimatedContent>
+                <div className="text-center">
+                    <AnimatedContent distance={30} direction="vertical" duration={1}>
+                        <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
+                            Edit Archive
+                        </h1>
+                        <p className="font-medium text-indigo-300 opacity-50 text-sm sm:text-base gradient-animated mb-5">
+                            Use the search function of your browser (Ctrl + F) to search for edits
+                        </p>
+                    </AnimatedContent>
+                </div>
 
                 <AnimatedContent distance={30} direction="vertical" duration={1}>
                     <div className="flex flex-col gap-4 w-full max-w-lg max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-2">
