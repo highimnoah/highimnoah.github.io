@@ -249,14 +249,14 @@ export default function Home() {
         <AnimatedContent distance={30} direction="vertical" duration={1}>
           <div className="flex flex-wrap gap-2 sm:gap-3 mt-6 justify-center">
             <a
-              href="https://www.youtube.com/@opiategalore?sub_confirmation=1"
+              href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
               target="_blank"
               className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
               YouTube
             </a>
             <a
-              href="https://twitter.com/ctgadse"
+              href="https://twitter.com/iidontnoahthing"
               target="_blank"
               className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
             >
