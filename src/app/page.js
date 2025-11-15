@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import "./font.css"
+import "./font.css";
 import Head from "next/head";
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css";
@@ -14,8 +14,12 @@ export default function Home() {
   const [statusClass, setStatusClass] = useState("status-offline");
   const [statusText, setStatusText] = useState("");
   const [activityText, setActivityText] = useState("—");
+
+  const [rawStatus, setRawStatus] = useState("offline");
+  const [activityName, setActivityName] = useState("");
+  const [activityImageUrl, setActivityImageUrl] = useState("");
+
   const [musicData, setMusicData] = useState(undefined);
-  const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
 
   const formatForLastfm = (text) => {
     return text.replace(/\s+/g, "+");
@@ -88,24 +92,75 @@ export default function Home() {
       setAvatarUrl(
         `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
       );
-      setFaviconUrl(
-        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-      );
       setUsername(user.username);
 
       const discordStatus = presence.discord_status || "offline";
+      setRawStatus(discordStatus);
       setStatusClass(`status-icon ${statusColors[discordStatus] || ""}`);
       setStatusText(
         discordStatus.charAt(0).toUpperCase() + discordStatus.slice(1)
       );
 
-      const currentActivity = presence.activities?.find(
-        (act) => act.name && act.name !== "Custom Status"
-      );
-      setActivityText(currentActivity ? currentActivity.name : "—");
+      const activities = presence.activities || [];
 
-      const applemusicActivity = presence.activities?.find(
-        (act) => act.type === 2 && act.name === "Apple Music" || act.name === "Windows Media Player" || act.name === "Cider"
+      const nonCustomActivities = activities.filter(
+        (act) =>
+          act &&
+          act.name &&
+          act.name !== "Custom Status" &&
+          act.type !== 4
+      );
+
+      let preferredActivity = null;
+      for (const act of nonCustomActivities) {
+        if (
+          !preferredActivity ||
+          (typeof act.type === "number" &&
+            act.type < (preferredActivity.type ?? Number.POSITIVE_INFINITY))
+        ) {
+          preferredActivity = act;
+        }
+      }
+
+      setActivityText(preferredActivity ? preferredActivity.name : "—");
+
+      if (preferredActivity) {
+        setActivityName(preferredActivity.name || "");
+
+        let imgUrl = "";
+        const isAppleMusicPresence = preferredActivity.name === "Apple Music";
+
+        let assetKey = preferredActivity.assets?.large_image || "";
+
+        if (isAppleMusicPresence && preferredActivity.assets?.small_image) {
+          assetKey = preferredActivity.assets.small_image;
+        }
+
+        if (assetKey) {
+          const indicator = "/https/";
+          const idx = assetKey.indexOf(indicator);
+
+          if (idx !== -1) {
+            imgUrl = "https://" + assetKey.substring(idx + indicator.length);
+          } else if (assetKey.startsWith("https://")) {
+            imgUrl = assetKey;
+          } else if (!isAppleMusicPresence && preferredActivity.application_id) {
+            imgUrl = `https://cdn.discordapp.com/app-assets/${preferredActivity.application_id}/${assetKey}.png`;
+          }
+        }
+
+        setActivityImageUrl(imgUrl || "");
+      } else {
+        setActivityName("");
+        setActivityImageUrl("");
+      }
+
+      const applemusicActivity = activities.find(
+        (act) =>
+          act &&
+          ((act.type === 2 && act.name === "Apple Music") ||
+            act.name === "Windows Media Player" ||
+            act.name === "Cider")
       );
 
       if (applemusicActivity) {
@@ -113,7 +168,7 @@ export default function Home() {
         let artist = "";
         let album = "";
 
-        if (applemusicActivity.state.includes("—")) {
+        if (applemusicActivity.state?.includes("—")) {
           const artistFull = applemusicActivity.state;
           const parts = artistFull.split("—");
           if (parts.length >= 2) {
@@ -125,7 +180,6 @@ export default function Home() {
           album = applemusicActivity.assets?.large_text || "";
         }
 
-
         let albumArtUrl = "";
         if (applemusicActivity.assets?.large_image) {
           let rawImageUrl = applemusicActivity.assets.large_image;
@@ -133,7 +187,8 @@ export default function Home() {
           const idx = rawImageUrl.indexOf(indicator);
           if (idx !== -1)
             albumArtUrl = "https://" + rawImageUrl.substring(idx + 7);
-          else if (rawImageUrl.startsWith("https://")) albumArtUrl = rawImageUrl;
+          else if (rawImageUrl.startsWith("https://"))
+            albumArtUrl = rawImageUrl;
         }
 
         const start = applemusicActivity.timestamps?.start;
@@ -161,116 +216,172 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <link rel="icon" href="public\icon.png" />
-      </Head>
       <Starfield />
-      <main className="flex flex-col items-center justify-center min-h-screen bg-slate-900/80 text-slate-100 px-3 sm:px-6">
-        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 sm:gap-8 w-full max-w-3xl">
-          {/* User Card */}
-          <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <div className="flex flex-col items-center justify-center gap-2 text-center p-4 sm:p-6 rounded-2xl bg-slate-800/70 shadow-lg w-full md:max-w-[320px] min-w-[220px] flex-1 min-h-[280px] h-336px sm:min-h-[336px]">
-              <img
-                src={avatarUrl}
-                alt="Avatar"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 shadow-md"
-              />
-              <h1 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
-                {username}
-              </h1>
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
-                <span className={statusClass}></span>
-                <span>{statusText}</span>
-              </div>
-              <p className="mt-2 text-xs sm:text-sm text-slate-400">{activityText}</p>
-            </div>
-          </AnimatedContent>
 
+      <main className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-zinc-950 via-slate-900 to-zinc-950 text-slate-100 px-3 sm:px-6">
+        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.15),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(15,23,42,0.9),_#020617)]" />
 
-          {/* Music Card */}
-          <AnimatedContent distance={30} direction="vertical" duration={1}>
-            <section className="flex flex-col items-center justify-center gap-2 text-center p-4 sm:p-6 rounded-2xl bg-slate-800/70 shadow-lg w-full md:max-w-[260px] min-w-[220px] flex-1 min-h-[280px] h-336px sm:min-h-[336px]">
-              {musicData === undefined ? (
-                <p className="text-sm text-gray-400">Fetching data...</p>
-              ) : musicData ? (
-                <>
-                  {musicData.albumArtUrl && (
-                    <img
-                      src={musicData.albumArtUrl}
-                      className="rounded-xl w-28 h-28 sm:w-32 sm:h-32 border-2"
-                      alt={musicData.album || "Album Art"}
-                    />
-                  )}
-                  <div className="text-center">
-                    <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent gradient-animated">
-                      {musicData.song}
-                    </h2>
-                    {musicData.album && (
-                      <p className="text-xs sm:text-sm text-slate-400">{musicData.album}</p>
-                    )}
-                    <p className="text-xs sm:text-sm text-slate-400">{musicData.artist}</p>
+        <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl">
+          <AnimatedContent distance={20} direction="vertical" duration={0.9}>
+            <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover"
+                />
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+                    {username}
+                  </h1>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
+                    <span className={statusClass}></span>
+                    <span className="uppercase tracking-wide text-[11px] sm:text-xs text-emerald-200/80">
+                      {statusText || "Offline"}
+                    </span>
                   </div>
-                  {musicData.start && musicData.end && (
-                    <div className="w-full flex flex-col mt-2">
-                      <div className="flex items-center gap-2 w-full">
-                        <span className="text-[10px] sm:text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-left">
-                          {formatTime(elapsed)}
-                        </span>
-                        <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.7)] transition-all duration-300"
-                            style={{ width: `${progress * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] sm:text-xs text-gray-500 font-['Geist Mono', monospace] w-7 text-right">
-                          {formatTime(duration)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {musicData && (
-                    <a
-                      href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
-                    >
-                      View on Last.fm
-                    </a>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-gray-400 text-center">Not listening to anything right now</p>
-              )}
-            </section>
-          </AnimatedContent>
-        </div>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-400/80">
+                    {activityText === "—" ? "No current activity" : activityText}
+                  </p>
+                </div>
+              </div>
 
-        <AnimatedContent distance={30} direction="vertical" duration={1}>
-          <div className="flex flex-wrap gap-2 sm:gap-3 mt-6 justify-center">
-            <a
-              href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
-              target="_blank"
-              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
-            >
-              YouTube
-            </a>
-            <a
-              href="https://twitter.com/iidontnoahthing"
-              target="_blank"
-              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
-            >
-              Twitter
-            </a>
-            <Link
-              href="/archive"
-              target="_self"
-              className="px-3 sm:px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm text-indigo-300 hover:text-indigo-200 transition"
-            >
-              Archive
-            </Link>
+              <div className="flex gap-2 sm:gap-3">
+                <a
+                  href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
+                  target="_blank"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-700/60 bg-zinc-950/60 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-200/90 hover:text-emerald-100 transition"
+                >
+                  YouTube
+                </a>
+                <a
+                  href="https://twitter.com/iidontnoahthing"
+                  target="_blank"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-700/60 bg-zinc-950/60 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-200/90 hover:text-emerald-100 transition"
+                >
+                  Twitter
+                </a>
+                <Link
+                  href="/archive"
+                  target="_self"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-600/70 bg-zinc-950/60 hover:bg-emerald-800/60 text-[11px] sm:text-xs text-emerald-100/90 hover:text-emerald-50 transition"
+                >
+                  Archive
+                </Link>
+              </div>
+            </header>
+          </AnimatedContent>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <AnimatedContent distance={30} direction="vertical" duration={1}>
+              <section
+                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
+                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90"
+              >
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.12),_transparent_60%)]" />
+
+                <div className="relative z-10 flex flex-col items-center">
+                  {rawStatus === "offline" ? (
+                    <p className="text-sm sm:text-base text-slate-400">
+                      Offline
+                    </p>
+                  ) : activityName && activityImageUrl ? (
+                    <>
+                      <img
+                        src={activityImageUrl}
+                        alt={activityName}
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover mb-3"
+                      />
+                      <p className="text-sm sm:text-base text-emerald-100 font-medium">
+                        {activityName}
+                      </p>
+                    </>
+                  ) : activityName ? (
+                    <p className="text-sm sm:text-base text-emerald-100 font-medium">
+                      {activityName}
+                    </p>
+                  ) : (
+                    <p className="text-sm sm:text-base text-slate-400">
+                      No activity detected.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </AnimatedContent>
+
+            <AnimatedContent distance={30} direction="vertical" duration={1}>
+              <section
+                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
+                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90"
+              >
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(22,163,74,0.18),_transparent_60%)]" />
+
+                {musicData === undefined ? (
+                  <p className="relative z-10 text-sm text-slate-400">
+                    Fetching currently playing track...
+                  </p>
+                ) : musicData ? (
+                  <>
+                    {musicData.albumArtUrl && (
+                      <img
+                        src={musicData.albumArtUrl}
+                        className="relative z-10 rounded-xl w-24 h-24 sm:w-28 sm:h-28 border border-emerald-600/70 shadow-md shadow-emerald-900/40 object-cover"
+                        alt={musicData.album || "Album Art"}
+                      />
+                    )}
+                    <div className="relative z-10 text-center">
+                      <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent">
+                        {musicData.song}
+                      </h2>
+                      {musicData.album && (
+                        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                          {musicData.album}
+                        </p>
+                      )}
+                      <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                        {musicData.artist}
+                      </p>
+                    </div>
+                    {musicData.start && musicData.end && (
+                      <div className="relative z-10 w-full flex flex-col mt-2">
+                        <div className="flex items-center gap-2 w-full">
+                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist Mono',monospace] w-7 text-left">
+                            {formatTime(elapsed)}
+                          </span>
+                          <div className="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-300"
+                              style={{ width: `${progress * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist Mono',monospace] w-7 text-right">
+                            {formatTime(duration)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {musicData && (
+                      <a
+                        href={`https://www.last.fm/music/${formatForLastfm(
+                          musicData.artist
+                        )}/_/${formatForLastfm(musicData.song)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-600/70 bg-zinc-950/70 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-100/90 hover:text-emerald-50 transition"
+                      >
+                        View on Last.fm
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <p className="relative z-10 text-sm text-slate-400 text-center">
+                    Not listening to anything right now.
+                  </p>
+                )}
+              </section>
+            </AnimatedContent>
           </div>
-        </AnimatedContent>
+        </div>
       </main>
     </>
   );
