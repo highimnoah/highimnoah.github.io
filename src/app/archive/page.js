@@ -62,7 +62,7 @@ export default function Archive() {
                                             {track.title}
                                         </p>
                                         <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-                                            Klick, um Format zu wählen
+                                            Click to select a format (.mp3 or .wav)
                                         </p>
                                     </button>
                                 ))}
