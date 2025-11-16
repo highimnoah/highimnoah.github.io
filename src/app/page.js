@@ -47,6 +47,19 @@ export default function Home() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const activityTitleToFilename = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const buildLocalIconPath = (title) => {
+    const slug = activityTitleToFilename(title);
+    if (!slug) return "";
+    return `/presence-icons/${slug}.png`;
+  };
+
   useEffect(() => {
     if (!musicData?.start || !musicData?.end) return;
 
@@ -86,7 +99,7 @@ export default function Home() {
       else if (data.t === "PRESENCE_UPDATE") presence = data.d;
       else return;
 
-      if (!presence?.discord_user) return;
+      if (!presence || !presence.discord_user) return;
 
       const user = presence.discord_user;
       setAvatarUrl(
@@ -116,7 +129,7 @@ export default function Home() {
         if (
           !preferredActivity ||
           (typeof act.type === "number" &&
-            act.type < (preferredActivity.type ?? Number.POSITIVE_INFINITY))
+            act.type < (preferredActivity.type != null ? preferredActivity.type : Number.POSITIVE_INFINITY))
         ) {
           preferredActivity = act;
         }
@@ -125,27 +138,37 @@ export default function Home() {
       setActivityText(preferredActivity ? preferredActivity.name : "—");
 
       if (preferredActivity) {
-        setActivityName(preferredActivity.name || "");
+        const name = preferredActivity.name || "";
+        setActivityName(name);
 
         let imgUrl = "";
-        const isAppleMusicPresence = preferredActivity.name === "Apple Music";
 
-        let assetKey = preferredActivity.assets?.large_image || "";
+        if (name === "Apple Music") {
+          imgUrl = buildLocalIconPath(name);
+        } else {
+          let assetKey =
+            (preferredActivity.assets && preferredActivity.assets.large_image) || "";
 
-        if (isAppleMusicPresence && preferredActivity.assets?.small_image) {
-          assetKey = preferredActivity.assets.small_image;
-        }
+          if (assetKey) {
+            const indicator = "/https/";
+            const idx = assetKey.indexOf(indicator);
 
-        if (assetKey) {
-          const indicator = "/https/";
-          const idx = assetKey.indexOf(indicator);
+            if (idx !== -1) {
+              imgUrl = "https://" + assetKey.substring(idx + indicator.length);
+            } else if (assetKey.startsWith("https://")) {
+              imgUrl = assetKey;
+            } else if (preferredActivity.application_id) {
+              imgUrl =
+                "https://cdn.discordapp.com/app-assets/" +
+                preferredActivity.application_id +
+                "/" +
+                assetKey +
+                ".png";
+            }
+          }
 
-          if (idx !== -1) {
-            imgUrl = "https://" + assetKey.substring(idx + indicator.length);
-          } else if (assetKey.startsWith("https://")) {
-            imgUrl = assetKey;
-          } else if (!isAppleMusicPresence && preferredActivity.application_id) {
-            imgUrl = `https://cdn.discordapp.com/app-assets/${preferredActivity.application_id}/${assetKey}.png`;
+          if (!imgUrl && name) {
+            imgUrl = buildLocalIconPath(name);
           }
         }
 
@@ -168,7 +191,7 @@ export default function Home() {
         let artist = "";
         let album = "";
 
-        if (applemusicActivity.state?.includes("—")) {
+        if (applemusicActivity.state && applemusicActivity.state.includes("—")) {
           const artistFull = applemusicActivity.state;
           const parts = artistFull.split("—");
           if (parts.length >= 2) {
@@ -177,22 +200,28 @@ export default function Home() {
           }
         } else {
           artist = applemusicActivity.state;
-          album = applemusicActivity.assets?.large_text || "";
+          album =
+            (applemusicActivity.assets &&
+              applemusicActivity.assets.large_text) ||
+            "";
         }
 
         let albumArtUrl = "";
-        if (applemusicActivity.assets?.large_image) {
-          let rawImageUrl = applemusicActivity.assets.large_image;
-          const indicator = "/https/";
-          const idx = rawImageUrl.indexOf(indicator);
-          if (idx !== -1)
-            albumArtUrl = "https://" + rawImageUrl.substring(idx + 7);
+        if (applemusicActivity.assets && applemusicActivity.assets.large_image) {
+          var rawImageUrl = applemusicActivity.assets.large_image;
+          var indicator2 = "/https/";
+          var idx2 = rawImageUrl.indexOf(indicator2);
+          if (idx2 !== -1)
+            albumArtUrl = "https://" + rawImageUrl.substring(idx2 + 7);
           else if (rawImageUrl.startsWith("https://"))
             albumArtUrl = rawImageUrl;
         }
 
-        const start = applemusicActivity.timestamps?.start;
-        const end = applemusicActivity.timestamps?.end;
+        const start =
+          applemusicActivity.timestamps &&
+          applemusicActivity.timestamps.start;
+        const end =
+          applemusicActivity.timestamps && applemusicActivity.timestamps.end;
 
         if (song && artist) {
           setMusicData({ song, artist, album, albumArtUrl, start, end });
@@ -282,15 +311,16 @@ export default function Home() {
 
                 <div className="relative z-10 flex flex-col items-center">
                   {rawStatus === "offline" ? (
-                    <p className="text-sm sm:text-base text-slate-400">
-                      Offline
-                    </p>
+                    <p className="text-sm sm:text-base text-slate-400">Offline</p>
                   ) : activityName && activityImageUrl ? (
                     <>
                       <img
                         src={activityImageUrl}
                         alt={activityName}
                         className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover mb-3"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
                       />
                       <p className="text-sm sm:text-base text-emerald-100 font-medium">
                         {activityName}
