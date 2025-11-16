@@ -303,7 +303,7 @@ export default function Home() {
             </header>
           </AnimatedContent>
 
-          <div className="grid grid-cols-2 gap-1 sm:gap-6">
+          <div className="grid grid-cols-2 gap-0.5 sm:gap-6">
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
