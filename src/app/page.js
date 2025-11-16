@@ -303,11 +303,11 @@ export default function Home() {
             </header>
           </AnimatedContent>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6">
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90"
+                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.12),_transparent_60%)]" />
 
@@ -344,7 +344,7 @@ export default function Home() {
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90"
+                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(22,163,74,0.18),_transparent_60%)]" />
 
