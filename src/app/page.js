@@ -57,7 +57,7 @@ export default function Home() {
   const buildLocalIconPath = (title) => {
     const slug = activityTitleToFilename(title);
     if (!slug) return "";
-    return `/presence-icons/${slug}.png`;
+    return `/presence-icons/${slug}.webp`;
   };
 
   useEffect(() => {
