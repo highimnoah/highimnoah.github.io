@@ -105,7 +105,7 @@ export default function Home() {
       setAvatarUrl(
         `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
       );
-      setUsername(user.username + ' · <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-75">he/him</span>');
+      setUsername(user.username);
 
       const discordStatus = presence.discord_status || "offline";
       setRawStatus(discordStatus);
