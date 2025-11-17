@@ -130,7 +130,10 @@ export default function Home() {
         if (
           !preferredActivity ||
           (typeof act.type === "number" &&
-            act.type < (preferredActivity.type != null ? preferredActivity.type : Number.POSITIVE_INFINITY))
+            act.type <
+            (preferredActivity.type != null
+              ? preferredActivity.type
+              : Number.POSITIVE_INFINITY))
         ) {
           preferredActivity = act;
         }
@@ -148,7 +151,8 @@ export default function Home() {
           imgUrl = buildLocalIconPath(name);
         } else {
           let assetKey =
-            (preferredActivity.assets && preferredActivity.assets.large_image) || "";
+            (preferredActivity.assets && preferredActivity.assets.large_image) ||
+            "";
 
           if (assetKey) {
             const indicator = "/https/";
@@ -244,6 +248,8 @@ export default function Home() {
     };
   }, []);
 
+  const isUsernameLoading = username === "Loading...";
+
   return (
     <>
       <Starfield />
@@ -261,9 +267,18 @@ export default function Home() {
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover"
                 />
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
-                    {username}
+                  {/* Username + Pronouns */}
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
+                    <span className="bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+                      {username}
+                    </span>
+                    {!isUsernameLoading && (
+                      <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-50">
+                        · he/him
+                      </span>
+                    )}
                   </h1>
+
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
                     <span className={statusClass}></span>
                     <span className="uppercase tracking-wide text-[11px] sm:text-xs text-emerald-200/80">
