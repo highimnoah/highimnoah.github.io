@@ -273,7 +273,7 @@ export default function Home() {
                       {username}
                     </span>
                     {!isUsernameLoading && (
-                      <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-50">
+                      <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-60">
                         · he/him
                       </span>
                     )}
