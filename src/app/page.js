@@ -274,7 +274,7 @@ export default function Home() {
                     </span>
                     {!isUsernameLoading && (
                       <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-70">
-                        &nbsp;&nbsp;he/him
+                        &nbsp;he/him
                       </span>
                     )}
                   </h1>
