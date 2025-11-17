@@ -105,7 +105,7 @@ export default function Home() {
       setAvatarUrl(
         `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
       );
-      setUsername(user.username);
+      setUsername(user.username + ' · <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-75">he/him</span>');
 
       const discordStatus = presence.discord_status || "offline";
       setRawStatus(discordStatus);
@@ -262,7 +262,7 @@ export default function Home() {
                 />
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
-                    {username} · <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-75">he/him</span>
+                    {username}
                   </h1>
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
                     <span className={statusClass}></span>
