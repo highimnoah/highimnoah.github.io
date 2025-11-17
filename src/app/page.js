@@ -306,6 +306,13 @@ export default function Home() {
                 >
                   Twitter
                 </a>
+                <a
+                  href="https://www.last.fm/user/priveworlddd"
+                  target="_blank"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-700/60 bg-zinc-950/60 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-200/90 hover:text-emerald-100 transition"
+                >
+                  Last.fm
+                </a>
                 <Link
                   href="/archive"
                   target="_self"
