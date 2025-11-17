@@ -121,7 +121,8 @@ export default function Home() {
           act &&
           act.name &&
           act.name !== "Custom Status" &&
-          act.type !== 4
+          act.type !== 4 &&
+          act.type !== 6
       );
 
       let preferredActivity = null;
