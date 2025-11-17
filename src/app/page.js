@@ -262,7 +262,7 @@ export default function Home() {
                 />
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
-                    {username}
+                    {username} · <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent">he/him</span>
                   </h1>
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
                     <span className={statusClass}></span>
