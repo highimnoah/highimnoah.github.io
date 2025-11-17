@@ -376,7 +376,7 @@ export default function Home() {
                       />
                     )}
                     <div className="relative z-10 text-center">
-                      <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden">
+                      <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden text-nowrap">
                         {musicData.song}
                       </h2>
                       {musicData.album && (
