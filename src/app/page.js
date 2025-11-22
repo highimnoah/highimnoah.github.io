@@ -21,6 +21,9 @@ export default function Home() {
 
   const [musicData, setMusicData] = useState(undefined);
 
+  const [preferredActivity, setPreferredActivity] = useState(null);
+  const [gameDurationStr, setGameDurationStr] = useState("");
+
   const formatForLastfm = (text) => {
     return text.replace(/\s+/g, "+");
   };
@@ -125,24 +128,23 @@ export default function Home() {
           act.type !== 6
       );
 
-      let preferredActivity = null;
+      let prefAct = null;
       for (const act of nonCustomActivities) {
         if (
-          !preferredActivity ||
+          !prefAct ||
           (typeof act.type === "number" &&
             act.type <
-            (preferredActivity.type != null
-              ? preferredActivity.type
-              : Number.POSITIVE_INFINITY))
+            (prefAct.type != null ? prefAct.type : Number.POSITIVE_INFINITY))
         ) {
-          preferredActivity = act;
+          prefAct = act;
         }
       }
 
-      setActivityText(preferredActivity ? preferredActivity.name : "—");
+      setPreferredActivity(prefAct);
+      setActivityText(prefAct ? prefAct.name : "—");
 
-      if (preferredActivity) {
-        const name = preferredActivity.name || "";
+      if (prefAct) {
+        const name = prefAct.name || "";
         setActivityName(name);
 
         let imgUrl = "";
@@ -151,8 +153,7 @@ export default function Home() {
           imgUrl = buildLocalIconPath(name);
         } else {
           let assetKey =
-            (preferredActivity.assets && preferredActivity.assets.large_image) ||
-            "";
+            (prefAct.assets && prefAct.assets.large_image) || "";
 
           if (assetKey) {
             const indicator = "/https/";
@@ -162,10 +163,10 @@ export default function Home() {
               imgUrl = "https://" + assetKey.substring(idx + indicator.length);
             } else if (assetKey.startsWith("https://")) {
               imgUrl = assetKey;
-            } else if (preferredActivity.application_id) {
+            } else if (prefAct.application_id) {
               imgUrl =
                 "https://cdn.discordapp.com/app-assets/" +
-                preferredActivity.application_id +
+                prefAct.application_id +
                 "/" +
                 assetKey +
                 ".png";
@@ -196,7 +197,10 @@ export default function Home() {
         let artist = "";
         let album = "";
 
-        if (applemusicActivity.state && applemusicActivity.state.includes("—")) {
+        if (
+          applemusicActivity.state &&
+          applemusicActivity.state.includes("—")
+        ) {
           const artistFull = applemusicActivity.state;
           const parts = artistFull.split("—");
           if (parts.length >= 2) {
@@ -206,8 +210,7 @@ export default function Home() {
         } else {
           artist = applemusicActivity.state;
           album =
-            (applemusicActivity.assets &&
-              applemusicActivity.assets.large_text) ||
+            (applemusicActivity.assets && applemusicActivity.assets.large_text) ||
             "";
         }
 
@@ -218,13 +221,11 @@ export default function Home() {
           var idx2 = rawImageUrl.indexOf(indicator2);
           if (idx2 !== -1)
             albumArtUrl = "https://" + rawImageUrl.substring(idx2 + 7);
-          else if (rawImageUrl.startsWith("https://"))
-            albumArtUrl = rawImageUrl;
+          else if (rawImageUrl.startsWith("https://")) albumArtUrl = rawImageUrl;
         }
 
         const start =
-          applemusicActivity.timestamps &&
-          applemusicActivity.timestamps.start;
+          applemusicActivity.timestamps && applemusicActivity.timestamps.start;
         const end =
           applemusicActivity.timestamps && applemusicActivity.timestamps.end;
 
@@ -236,17 +237,50 @@ export default function Home() {
       }
     };
 
+    return () => {
+      socketRef.current?.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      preferredActivity?.type === 0 &&
+      preferredActivity.timestamps?.start &&
+      rawStatus !== "offline"
+    ) {
+      const start = preferredActivity.timestamps.start;
+      const updateGameDuration = () => {
+        const now = Date.now();
+        const msPlayed = now - start;
+        setGameDurationStr(formatDuration(msPlayed));
+      };
+      updateGameDuration();
+      const interval = setInterval(updateGameDuration, 60000); // Update jede Minute
+      return () => clearInterval(interval);
+    } else {
+      setGameDurationStr("");
+    }
+  }, [preferredActivity, rawStatus]);
+
+  useEffect(() => {
     const heartbeat = setInterval(() => {
       if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify({ op: 3 }));
       }
     }, 30000);
 
-    return () => {
-      clearInterval(heartbeat);
-      socketRef.current?.close();
-    };
+    return () => clearInterval(heartbeat);
   }, []);
+
+  function formatDuration(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (hours >= 1) {
+      return `${hours} hr${hours > 1 ? "s" : ""}${minutes > 0 ? `, ${minutes} min` : ""}`;
+    }
+    return `${minutes} min`;
+  }
 
   const isUsernameLoading = username === "Loading...";
 
@@ -285,8 +319,10 @@ export default function Home() {
                       {statusText || "Offline"}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-400/80">
-                    {activityText === "—" ? "No current activity" : activityText}
+                  <p className="text-xs ...">
+                    {preferredActivity?.type === 0 && gameDurationStr
+                      ? `${activityText} for ${gameDurationStr}`
+                      : activityText}
                   </p>
                 </div>
               </div>
@@ -328,7 +364,7 @@ export default function Home() {
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
+                         transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.12),_transparent_60%)]" />
 
@@ -365,7 +401,7 @@ export default function Home() {
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                           transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
+                         transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(22,163,74,0.18),_transparent_60%)]" />
 
