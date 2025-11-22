@@ -319,7 +319,7 @@ export default function Home() {
                       {statusText || "Offline"}
                     </span>
                   </div>
-                  <p className="text-xs ...">
+                  <p className="mt-1 text-xs sm:text-sm text-slate-400/80">
                     {preferredActivity?.type === 0 && gameDurationStr
                       ? `${activityText} for ${gameDurationStr}`
                       : activityText}
