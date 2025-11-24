@@ -6,7 +6,6 @@ import Head from "next/head";
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css";
 import Link from "next/link";
-import Starfield from "../../components/Starfield";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
@@ -286,12 +285,39 @@ export default function Home() {
 
   return (
     <>
-      <Starfield />
+      {/* Hintergrund-Video */}
+      <video
+        className="fixed inset-0 w-full h-full object-cover -z-50"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src="/video/background.webm" type="video/webm" />
+      </video>
 
-      <main className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-zinc-950 via-slate-900 to-zinc-950 text-slate-100 px-3 sm:px-6">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.15),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(15,23,42,0.9),_#020617)]" />
+      {/* 1) Blur-Layer (fullscreen, zwischen Video und Content) */}
+      <div className="fixed inset-0 pointer-events-none -z-30">
+        {/* backdrop-blur mit radialer Maskierung für smoothen Übergang */}
+        <div
+          className="absolute inset-0 backdrop-blur-2xl"
+          style={{
+            // radial mask sorgt dafür, dass in der Mitte stärker geblurrt ist
+            maskImage:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.93) 20%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 75%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.93) 20%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 75%)",
+          }}
+        />
 
+        {/* optional: dimmt das Video gleichmäßig etwas ab (fein justierbar) */}
+        <div className="absolute inset-0 bg-black/35" />
+      </div>
+
+      {/* Content (dein Main) */}
+      <main className="relative flex flex-col items-center justify-center min-h-screen bg-transparent text-slate-100 px-3 sm:px-6">
         <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden">
+
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
             <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
               <div className="flex items-center gap-4">
