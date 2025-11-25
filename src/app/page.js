@@ -285,7 +285,6 @@ export default function Home() {
 
   return (
     <>
-      {/* Hintergrund-Video */}
       <video
         className="fixed inset-0 w-full h-full object-cover -z-50"
         autoPlay
@@ -296,27 +295,11 @@ export default function Home() {
         <source src="/video/background.webm" type="video/webm" />
       </video>
 
-      {/* 1) Blur-Layer (fullscreen, zwischen Video und Content) */}
-      <div className="fixed inset-0 pointer-events-none -z-30">
-        {/* backdrop-blur mit radialer Maskierung für smoothen Übergang */}
-        <div
-          className="absolute inset-0 backdrop-blur-2xl"
-          style={{
-            // radial mask sorgt dafür, dass in der Mitte stärker geblurrt ist
-            maskImage:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0.93) 20%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 75%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0.93) 20%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 75%)",
-          }}
-        />
-
-        {/* optional: dimmt das Video gleichmäßig etwas ab (fein justierbar) */}
-        <div className="absolute inset-0 bg-black/35" />
-      </div>
-
-      {/* Content (dein Main) */}
       <main className="relative flex flex-col items-center justify-center min-h-screen bg-transparent text-slate-100 px-3 sm:px-6">
-        <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden">
+        <div
+          className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden
+          backdrop-blur-sm bg-black/30 rounded-2xl p-3"
+        >
 
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
             <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
@@ -334,7 +317,7 @@ export default function Home() {
                     </span>
                     {!isUsernameLoading && (
                       <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-70">
-                        &nbsp;he/him
+                        he/him
                       </span>
                     )}
                   </h1>
