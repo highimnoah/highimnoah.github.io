@@ -1,0 +1,38 @@
+/* marquee.css - minimal, robust */
+.marquee {
+    width: 100%;
+    overflow: hidden;
+    --gap: 40px;
+    --duration: 8s;
+    --total: 0px;
+    /* wird per JS gesetzt */
+}
+
+.marqueeInner {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    will-change: transform;
+    animation: marquee-scroll var(--duration) linear infinite;
+    /* sicherstellen, dass Animation läuft */
+    animation-play-state: running;
+}
+
+.marqueeItem {
+    display: inline-block;
+    white-space: nowrap;
+    margin-right: var(--gap);
+    padding-right: 0.125rem;
+    /* kleines breathing */
+}
+
+/* Scroll um genau --total (textWidth + gap) */
+@keyframes marquee-scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(calc(-1 * var(--total)));
+    }
+}

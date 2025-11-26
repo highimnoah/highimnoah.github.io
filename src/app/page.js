@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import "./font.css";
-import Head from "next/head";
+import "./marquee.css";
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css";
 import Link from "next/link";
@@ -276,12 +276,81 @@ export default function Home() {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     if (hours >= 1) {
-      return `${hours} hr${hours > 1 ? "s" : ""}${minutes > 0 ? `, ${minutes} min` : ""}`;
+      return `${hours} hr${hours > 1 ? "s" : ""}${minutes > 0 ? `, ${minutes} min` : ""
+        }`;
     }
     return `${minutes} min`;
   }
 
   const isUsernameLoading = username === "Loading...";
+
+  // --- MARQUEE LOGIC ---
+  const marqueeContainerRef = useRef(null);
+  const marqueeTextRef = useRef(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [marqueeVars, setMarqueeVars] = useState({ total: 0, duration: 0, gap: 40 });
+
+  useEffect(() => {
+    let ro = null;
+    let raf = null;
+    let mounted = true;
+
+    const compute = () => {
+      const container = marqueeContainerRef.current;
+      const text = marqueeTextRef.current;
+      if (!container || !text) {
+        setIsOverflowing(false);
+        return;
+      }
+
+      const containerWidth = container.getBoundingClientRect().width;
+      const textWidth = text.getBoundingClientRect().width;
+
+      if (textWidth > containerWidth) {
+        const gap = 40;
+        const total = textWidth + gap;
+        const speed = 100; // px/s
+        const duration = Math.max(6, total / speed);
+
+        if (mounted) {
+          setMarqueeVars({ total, duration, gap });
+          setIsOverflowing(true);
+          // direkt auf Container setzen (sicher)
+          container.style.setProperty("--total", `${total}px`);
+          container.style.setProperty("--gap", `${gap}px`);
+          container.style.setProperty("--duration", `${duration}s`);
+        }
+      } else {
+        if (mounted) setIsOverflowing(false);
+      }
+    };
+
+    const delayedCompute = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setTimeout(compute, 40));
+    };
+
+    delayedCompute();
+    window.addEventListener("resize", delayedCompute);
+
+    try {
+      ro = new ResizeObserver(delayedCompute);
+      if (marqueeContainerRef.current) ro.observe(marqueeContainerRef.current);
+      if (marqueeTextRef.current) ro.observe(marqueeTextRef.current);
+    } catch (e) { }
+
+    const imgs = document.querySelectorAll(".relative.z-10 img");
+    imgs.forEach((img) => img.addEventListener("load", delayedCompute));
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("resize", delayedCompute);
+      if (ro) ro.disconnect();
+      imgs.forEach((img) => img.removeEventListener("load", delayedCompute));
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [musicData?.song]);
+
 
   return (
     <>
@@ -427,9 +496,37 @@ export default function Home() {
                         alt={musicData.album || "Album Art"}
                       />
                     )}
-                    <div className="relative z-10 text-center">
-                      <h2 className="text-md sm:text-lg font-semibold bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden text-nowrap">
-                        {musicData.song}
+                    <div className="relative z-10 text-center w-full px-4">
+                      {/*
+                        Marquee-enabled song title
+                        If the song is wider than the available space we render a scrolling/looping marquee
+                      */}
+                      <h2 className="text-md sm:text-lg font-semibold overflow-hidden">
+                        {!isOverflowing ? (
+                          <span className="bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap">
+                            {musicData.song}
+                          </span>
+                        ) : (
+                          <div
+                            ref={marqueeContainerRef}
+                            className="marquee w-full overflow-hidden"
+                            /* React inline style: setzt die CSS-Variablen initial (compute() überschreibt später) */
+                            style={{
+                              ["--gap"]: `${marqueeVars.gap}px`,
+                              ["--duration"]: `${marqueeVars.duration}s`,
+                              ["--total"]: `${marqueeVars.total}px`,
+                            }}
+                          >
+                            <div className="marqueeInner" aria-hidden>
+                              <span ref={marqueeTextRef} className="marqueeItem">
+                                {musicData.song}
+                              </span>
+                              <span className="marqueeItem">
+                                {musicData.song}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </h2>
                       {musicData.album && (
                         <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
@@ -441,7 +538,7 @@ export default function Home() {
                       </p>
                     </div>
                     {musicData.start && musicData.end && (
-                      <div className="relative z-10 w-full flex flex-col mt-2">
+                      <div className="relative z-10 w-full flex flex-col mt-2 px-4">
                         <div className="flex items-center gap-2 w-full">
                           <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist Mono',monospace] w-7 text-left">
                             {formatTime(elapsed)}
