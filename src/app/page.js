@@ -254,7 +254,7 @@ export default function Home() {
         setGameDurationStr(formatDuration(msPlayed));
       };
       updateGameDuration();
-      const interval = setInterval(updateGameDuration, 60000); // Update jede Minute
+      const interval = setInterval(updateGameDuration, 60000);
       return () => clearInterval(interval);
     } else {
       setGameDurationStr("");
@@ -284,7 +284,6 @@ export default function Home() {
 
   const isUsernameLoading = username === "Loading...";
 
-  // --- MARQUEE LOGIC ---
   const marqueeContainerRef = useRef(null);
   const marqueeTextRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -309,13 +308,12 @@ export default function Home() {
       if (textWidth > containerWidth) {
         const gap = 40;
         const total = textWidth + gap;
-        const speed = 100; // px/s
+        const speed = 100;
         const duration = Math.max(6, total / speed);
 
         if (mounted) {
           setMarqueeVars({ total, duration, gap });
           setIsOverflowing(true);
-          // direkt auf Container setzen (sicher)
           container.style.setProperty("--total", `${total}px`);
           container.style.setProperty("--gap", `${gap}px`);
           container.style.setProperty("--duration", `${duration}s`);
