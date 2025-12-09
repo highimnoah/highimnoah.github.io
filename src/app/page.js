@@ -495,10 +495,6 @@ export default function Home() {
                       />
                     )}
                     <div className="relative z-10 text-center w-full px-4">
-                      {/*
-                        Marquee-enabled song title
-                        If the song is wider than the available space we render a scrolling/looping marquee
-                      */}
                       <h2 className="text-md sm:text-lg font-semibold overflow-hidden">
                         {!isOverflowing ? (
                           <span className="bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap">
@@ -508,7 +504,6 @@ export default function Home() {
                           <div
                             ref={marqueeContainerRef}
                             className="marquee w-full overflow-hidden"
-                            /* React inline style: setzt die CSS-Variablen initial (compute() überschreibt später) */
                             style={{
                               ["--gap"]: `${marqueeVars.gap}px`,
                               ["--duration"]: `${marqueeVars.duration}s`,
