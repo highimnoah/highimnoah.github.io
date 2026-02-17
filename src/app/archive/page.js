@@ -10,6 +10,14 @@ import Head from "next/head";
 
 export default function Archive() {
     const [selectedTrack, setSelectedTrack] = useState(null);
+    const [query, setQuery] = useState("");
+
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const filteredSongs = songs.filter((track) => {
+        const title = (track?.title ?? "").toLowerCase();
+        return normalizedQuery === "" || title.includes(normalizedQuery);
+    });
 
     const handleDownload = (track) => {
         setSelectedTrack(track);
@@ -43,16 +51,28 @@ export default function Archive() {
                             <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
                                 Edit Archive
                             </h1>
-                            <p className="text-[11px] sm:text-xs text-slate-500">
-                                Use your browser&apos;s search function (Ctrl + F) to search for edits.
-                            </p>
+                            <div className="mt-3 flex flex-col items-center gap-2">
+                                <input
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder="Search edits…"
+                                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-emerald-600/70"
+                                    type="text"
+                                    spellCheck={false}
+                                    autoComplete="off"
+                                />
+
+                                <div className="w-full text-[11px] sm:text-xs text-slate-500">
+                                    Showing {filteredSongs.length} of {songs.length}
+                                </div>
+                            </div>
                         </AnimatedContent>
                     </div>
 
                     <AnimatedContent distance={30} direction="vertical" duration={1}>
-                        <div className="w-full max-h-[60vh] sm:max-h-[70vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/80 backdrop-blur-sm shadow-md overflow-hidden">
+                        <div className="w-full max-h-[55vh] sm:max-h-[65vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/80 backdrop-blur-sm shadow-md overflow-hidden">
                             <div className="flex flex-col divide-y divide-zinc-800">
-                                {songs.map((track, i) => (
+                                {filteredSongs.map((track, i) => (
                                     <button
                                         key={i}
                                         onClick={() => handleDownload(track)}
@@ -62,7 +82,7 @@ export default function Archive() {
                                             {track.title}
                                         </p>
                                         <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-                                            Click to select a format (.mp3 or .wav)
+                                            Click to select a format: .mp3 or .wav
                                         </p>
                                     </button>
                                 ))}
