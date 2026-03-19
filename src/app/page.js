@@ -23,6 +23,8 @@ export default function Home() {
   const [preferredActivity, setPreferredActivity] = useState(null);
   const [gameDurationStr, setGameDurationStr] = useState("");
 
+  const backgroundImgRef = useRef(null);
+
   const formatForLastfm = (text) => {
     return text.replace(/\s+/g, "+");
   };
@@ -151,8 +153,7 @@ export default function Home() {
         if (name === "Apple Music") {
           imgUrl = buildLocalIconPath(name);
         } else {
-          let assetKey =
-            (prefAct.assets && prefAct.assets.large_image) || "";
+          let assetKey = (prefAct.assets && prefAct.assets.large_image) || "";
 
           if (assetKey) {
             const indicator = "/https/";
@@ -209,18 +210,23 @@ export default function Home() {
         } else {
           artist = applemusicActivity.state;
           album =
-            (applemusicActivity.assets && applemusicActivity.assets.large_text) ||
+            (applemusicActivity.assets &&
+              applemusicActivity.assets.large_text) ||
             "";
         }
 
         let albumArtUrl = "";
-        if (applemusicActivity.assets && applemusicActivity.assets.large_image) {
+        if (
+          applemusicActivity.assets &&
+          applemusicActivity.assets.large_image
+        ) {
           var rawImageUrl = applemusicActivity.assets.large_image;
           var indicator2 = "/https/";
           var idx2 = rawImageUrl.indexOf(indicator2);
           if (idx2 !== -1)
             albumArtUrl = "https://" + rawImageUrl.substring(idx2 + 7);
-          else if (rawImageUrl.startsWith("https://")) albumArtUrl = rawImageUrl;
+          else if (rawImageUrl.startsWith("https://"))
+            albumArtUrl = rawImageUrl;
         }
 
         const start =
@@ -287,7 +293,11 @@ export default function Home() {
   const marqueeContainerRef = useRef(null);
   const marqueeTextRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
-  const [marqueeVars, setMarqueeVars] = useState({ total: 0, duration: 0, gap: 40 });
+  const [marqueeVars, setMarqueeVars] = useState({
+    total: 0,
+    duration: 0,
+    gap: 40,
+  });
 
   useEffect(() => {
     let ro = null;
@@ -349,24 +359,94 @@ export default function Home() {
     };
   }, [musicData?.song]);
 
+  function getLuminance(r, g, b) {
+    const [rs, gs, bs] = [r, g, b].map((c) => {
+      c /= 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+  }
+
+  function lightenColor(r, g, b, targetLuminance = 0.4) {
+    let luminance = getLuminance(r, g, b);
+    if (luminance >= targetLuminance) return { r, g, b };
+
+    let factor = 1;
+    while (luminance < targetLuminance && factor < 10) {
+      factor += 0.1;
+      r = Math.min(255, Math.round(r * factor));
+      g = Math.min(255, Math.round(g * factor));
+      b = Math.min(255, Math.round(b * factor));
+      luminance = getLuminance(r, g, b);
+    }
+    return { r, g, b };
+  }
+
+  function getDominantColor(imgElement, callback) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const sampleSize = 50;
+
+    canvas.width = sampleSize;
+    canvas.height = sampleSize;
+
+    const process = () => {
+      ctx.drawImage(imgElement, 0, 0, sampleSize, sampleSize);
+      const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+
+      const colorMap = {};
+      for (let i = 0; i < data.length; i += 4) {
+        const r = Math.round(data[i] / 32) * 32;
+        const g = Math.round(data[i + 1] / 32) * 32;
+        const b = Math.round(data[i + 2] / 32) * 32;
+        const a = data[i + 3];
+        if (a < 128) continue;
+        const key = `${r},${g},${b}`;
+        colorMap[key] = (colorMap[key] || 0) + 1;
+      }
+
+      const dominant = Object.entries(colorMap)
+        .sort((a, b) => b[1] - a[1])[0][0]
+        .split(",")
+        .map(Number);
+
+      let [r, g, b] = dominant;
+
+      const luminance = getLuminance(r, g, b);
+      if (luminance < 0.15) {
+        ({ r, g, b } = lightenColor(r, g, b, 0.35));
+      }
+
+      callback(`rgb(${r}, ${g}, ${b})`);
+    };
+
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+      process();
+    } else {
+      imgElement.addEventListener("load", process);
+    }
+  }
+
+  useEffect(() => {
+    const img = backgroundImgRef.current;
+    if (!img) return;
+
+    getDominantColor(img, (color) => {
+      document.documentElement.style.setProperty("--accent", color);
+    });
+  }, []);
 
   return (
     <>
-      <video
+      <img
+        ref={backgroundImgRef}
         className="fixed inset-0 w-full h-full object-cover -z-50"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        <source src="/video/background.webm" type="video/webm" />
-      </video>
+        src="/img/9902119.jpg"
+        id="background-img"
+      />
 
       <main className="relative flex flex-col items-center justify-center min-h-screen bg-transparent text-slate-100 px-3 sm:px-6">
-        <div
-          className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden
-          backdrop-blur-sm bg-black/30 rounded-2xl p-3"
-        >
+        <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden backdrop-blur-sm bg-black/30 rounded-2xl p-3">
 
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
             <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
@@ -374,16 +454,30 @@ export default function Home() {
                 <img
                   src={avatarUrl}
                   alt="Avatar"
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
+                  // ↓ border + shadow via inline style, da Tailwind keine CSS-Vars in border-color unterstützt
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                    boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                  }}
                 />
                 <div>
-                  {/* Username + Pronouns */}
                   <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
-                    <span className="bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+                    <span
+                      className="bg-clip-text text-transparent"
+                      style={{
+                        backgroundImage: "linear-gradient(to right, var(--accent), var(--accent))",
+                      }}
+                    >
                       {username}
                     </span>
                     {!isUsernameLoading && (
-                      <span className="text-xl sm:text-2xl font-normal tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent opacity-70">
+                      <span
+                        className="text-xl sm:text-2xl font-normal tracking-tight bg-clip-text text-transparent opacity-70"
+                        style={{
+                          backgroundImage: "linear-gradient(to right, var(--accent), var(--accent))",
+                        }}
+                      >
                         he/him
                       </span>
                     )}
@@ -391,7 +485,10 @@ export default function Home() {
 
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
                     <span className={statusClass}></span>
-                    <span className="uppercase tracking-wide text-[11px] sm:text-xs text-emerald-200/80">
+                    <span
+                      className="uppercase tracking-wide text-[11px] sm:text-xs opacity-80"
+                      style={{ color: "var(--accent)" }}
+                    >
                       {statusText || "Offline"}
                     </span>
                   </div>
@@ -407,21 +504,57 @@ export default function Home() {
                 <a
                   href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
                   target="_blank"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-700/60 bg-zinc-950/60 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-200/90 hover:text-emerald-100 transition"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
+                    color: "color-mix(in srgb, var(--accent) 90%, white)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                    e.currentTarget.style.color = "var(--accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
+                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                  }}
                 >
                   YouTube
                 </a>
                 <a
                   href="https://twitter.com/iidontnoahthing"
                   target="_blank"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-700/60 bg-zinc-950/60 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-200/90 hover:text-emerald-100 transition"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
+                    color: "color-mix(in srgb, var(--accent) 90%, white)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                    e.currentTarget.style.color = "var(--accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
+                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                  }}
                 >
                   Twitter
                 </a>
                 <Link
                   href="/archive"
                   target="_self"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-600/70 bg-zinc-950/60 hover:bg-emerald-800/60 text-[11px] sm:text-xs text-emerald-100/90 hover:text-emerald-50 transition"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                    color: "color-mix(in srgb, var(--accent) 90%, white)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 25%, transparent)";
+                    e.currentTarget.style.color = "var(--accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
+                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                  }}
                 >
                   Archive
                 </Link>
@@ -432,10 +565,25 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-0.5 sm:gap-6">
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
-                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                         transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
+                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 60%, transparent)";
+                  e.currentTarget.style.transform = "translateY(-4px) scale(1)";
+                  e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.transform = "";
+                  e.currentTarget.style.background = "";
+                }}
               >
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.12),_transparent_60%)]" />
+                {/* Radial glow mit accent */}
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background: "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
+                  }}
+                />
 
                 <div className="relative z-10 flex flex-col items-center">
                   {rawStatus === "offline" ? (
@@ -445,17 +593,27 @@ export default function Home() {
                       <img
                         src={activityImageUrl}
                         alt={activityName}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-emerald-700/70 shadow-md shadow-emerald-900/40 object-cover mb-3"
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover mb-3"
+                        style={{
+                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                        }}
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                         }}
                       />
-                      <p className="text-sm sm:text-base text-emerald-100 font-medium">
+                      <p
+                        className="text-sm sm:text-base font-medium"
+                        style={{ color: "color-mix(in srgb, var(--accent) 90%, white)" }}
+                      >
                         {activityName}
                       </p>
                     </>
                   ) : activityName ? (
-                    <p className="text-sm sm:text-base text-emerald-100 font-medium">
+                    <p
+                      className="text-sm sm:text-base font-medium"
+                      style={{ color: "color-mix(in srgb, var(--accent) 90%, white)" }}
+                    >
                       {activityName}
                     </p>
                   ) : (
@@ -469,10 +627,24 @@ export default function Home() {
 
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
-                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px]
-                         transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/60 hover:bg-zinc-900/90 scale-[0.85] sm:scale-100"
+                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 60%, transparent)";
+                  e.currentTarget.style.transform = "translateY(-4px) scale(1)";
+                  e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.transform = "";
+                  e.currentTarget.style.background = "";
+                }}
               >
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(22,163,74,0.18),_transparent_60%)]" />
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background: "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
+                  }}
+                />
 
                 {musicData === undefined ? (
                   <p className="relative z-10 text-sm text-slate-400">
@@ -483,14 +655,23 @@ export default function Home() {
                     {musicData.albumArtUrl && (
                       <img
                         src={musicData.albumArtUrl}
-                        className="relative z-10 rounded-xl w-24 h-24 sm:w-28 sm:h-28 border border-emerald-600/70 shadow-md shadow-emerald-900/40 object-cover"
+                        className="relative z-10 rounded-xl w-24 h-24 sm:w-28 sm:h-28 object-cover"
                         alt={musicData.album || "Album Art"}
+                        style={{
+                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                        }}
                       />
                     )}
                     <div className="relative z-10 text-center w-full px-4">
                       <h2 className="text-md sm:text-lg font-semibold overflow-hidden">
                         {!isOverflowing ? (
-                          <span className="bg-gradient-to-r from-emerald-200 to-emerald-400 bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap">
+                          <span
+                            className="bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap"
+                            style={{
+                              backgroundImage: "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                            }}
+                          >
                             {musicData.song}
                           </span>
                         ) : (
@@ -498,18 +679,16 @@ export default function Home() {
                             ref={marqueeContainerRef}
                             className="marquee w-full overflow-hidden"
                             style={{
-                              ["--gap"]: `${marqueeVars.gap}px`,
-                              ["--duration"]: `${marqueeVars.duration}s`,
-                              ["--total"]: `${marqueeVars.total}px`,
+                              "--gap": `${marqueeVars.gap}px`,
+                              "--duration": `${marqueeVars.duration}s`,
+                              "--total": `${marqueeVars.total}px`,
                             }}
                           >
                             <div className="marqueeInner" aria-hidden>
                               <span ref={marqueeTextRef} className="marqueeItem">
                                 {musicData.song}
                               </span>
-                              <span className="marqueeItem">
-                                {musicData.song}
-                              </span>
+                              <span className="marqueeItem">{musicData.song}</span>
                             </div>
                           </div>
                         )}
@@ -526,16 +705,19 @@ export default function Home() {
                     {musicData.start && musicData.end && (
                       <div className="relative z-10 w-full flex flex-col mt-2 px-4">
                         <div className="flex items-center gap-2 w-full">
-                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist Mono',monospace] w-7 text-left">
+                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-left">
                             {formatTime(elapsed)}
                           </span>
                           <div className="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                             <div
-                              className="h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-300"
-                              style={{ width: `${progress * 100}%` }}
+                              className="h-1.5 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${progress * 100}%`,
+                                background: "linear-gradient(to right, color-mix(in srgb, var(--accent) 70%, white), var(--accent))",
+                              }}
                             />
                           </div>
-                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist Mono',monospace] w-7 text-right">
+                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-right">
                             {formatTime(duration)}
                           </span>
                         </div>
@@ -543,12 +725,22 @@ export default function Home() {
                     )}
                     {musicData && (
                       <a
-                        href={`https://www.last.fm/music/${formatForLastfm(
-                          musicData.artist
-                        )}/_/${formatForLastfm(musicData.song)}`}
+                        href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-600/70 bg-zinc-950/70 hover:bg-emerald-900/50 text-[11px] sm:text-xs text-emerald-100/90 hover:text-emerald-50 transition"
+                        className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-full bg-zinc-950/70 text-[11px] sm:text-xs transition"
+                        style={{
+                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          color: "color-mix(in srgb, var(--accent) 90%, white)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                          e.currentTarget.style.color = "var(--accent)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "rgb(9 9 11 / 0.7)";
+                          e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                        }}
                       >
                         View on Last.fm
                       </a>
