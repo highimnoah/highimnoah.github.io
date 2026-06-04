@@ -471,16 +471,6 @@ export default function Home() {
                     >
                       {username}
                     </span>
-                    {!isUsernameLoading && (
-                      <span
-                        className="text-xl sm:text-2xl font-normal tracking-tight bg-clip-text text-transparent opacity-70"
-                        style={{
-                          backgroundImage: "linear-gradient(to right, var(--accent), var(--accent))",
-                        }}
-                      >
-                        he/him
-                      </span>
-                    )}
                   </h1>
 
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
