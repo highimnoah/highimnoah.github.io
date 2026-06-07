@@ -6,6 +6,9 @@ import "./marquee.css";
 import AnimatedContent from "../../components/AnimatedContent";
 import "./OnlineStatus.css";
 import Link from "next/link";
+import { FaYoutube } from "react-icons/fa6";
+import { FaXTwitter } from "react-icons/fa6";
+import { FolderOpen } from "lucide-react";
 
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
@@ -64,6 +67,8 @@ export default function Home() {
     return `/presence-icons/${slug}.webp`;
   };
 
+  const iconClass = "w-4 h-4 sm:w-[18px] sm:h-[18px]";
+
   useEffect(() => {
     if (!musicData?.start || !musicData?.end) return;
 
@@ -90,7 +95,7 @@ export default function Home() {
         JSON.stringify({
           op: 2,
           d: { subscribe_to_ids: [userId] },
-        })
+        }),
       );
     };
 
@@ -107,7 +112,7 @@ export default function Home() {
 
       const user = presence.discord_user;
       setAvatarUrl(
-        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`,
       );
       setUsername(user.username);
 
@@ -115,7 +120,7 @@ export default function Home() {
       setRawStatus(discordStatus);
       setStatusClass(`status-icon ${statusColors[discordStatus] || ""}`);
       setStatusText(
-        discordStatus.charAt(0).toUpperCase() + discordStatus.slice(1)
+        discordStatus.charAt(0).toUpperCase() + discordStatus.slice(1),
       );
 
       const activities = presence.activities || [];
@@ -126,7 +131,7 @@ export default function Home() {
           act.name &&
           act.name !== "Custom Status" &&
           act.type !== 4 &&
-          act.type !== 6
+          act.type !== 6,
       );
 
       let prefAct = null;
@@ -135,7 +140,7 @@ export default function Home() {
           !prefAct ||
           (typeof act.type === "number" &&
             act.type <
-            (prefAct.type != null ? prefAct.type : Number.POSITIVE_INFINITY))
+              (prefAct.type != null ? prefAct.type : Number.POSITIVE_INFINITY))
         ) {
           prefAct = act;
         }
@@ -189,7 +194,7 @@ export default function Home() {
           act &&
           ((act.type === 2 && act.name === "Apple Music") ||
             act.name === "Windows Media Player" ||
-            act.name === "Cider")
+            act.name === "Cider"),
       );
 
       if (applemusicActivity) {
@@ -282,8 +287,9 @@ export default function Home() {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     if (hours >= 1) {
-      return `${hours} hr${hours > 1 ? "s" : ""}${minutes > 0 ? `, ${minutes} min` : ""
-        }`;
+      return `${hours} hr${hours > 1 ? "s" : ""}${
+        minutes > 0 ? `, ${minutes} min` : ""
+      }`;
     }
     return `${minutes} min`;
   }
@@ -345,7 +351,7 @@ export default function Home() {
       ro = new ResizeObserver(delayedCompute);
       if (marqueeContainerRef.current) ro.observe(marqueeContainerRef.current);
       if (marqueeTextRef.current) ro.observe(marqueeTextRef.current);
-    } catch (e) { }
+    } catch (e) {}
 
     const imgs = document.querySelectorAll(".relative.z-10 img");
     imgs.forEach((img) => img.addEventListener("load", delayedCompute));
@@ -447,7 +453,6 @@ export default function Home() {
 
       <main className="relative flex flex-col items-center justify-center min-h-screen bg-transparent text-slate-100 px-3 sm:px-6">
         <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden backdrop-blur-sm bg-black/30 rounded-2xl p-3">
-
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
             <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -457,8 +462,10 @@ export default function Home() {
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
                   // ↓ border + shadow via inline style, da Tailwind keine CSS-Vars in border-color unterstützt
                   style={{
-                    border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
-                    boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                    boxShadow:
+                      "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
                   }}
                 />
                 <div>
@@ -466,7 +473,8 @@ export default function Home() {
                     <span
                       className="bg-clip-text text-transparent"
                       style={{
-                        backgroundImage: "linear-gradient(to right, var(--accent), var(--accent))",
+                        backgroundImage:
+                          "linear-gradient(to right, var(--accent), var(--accent))",
                       }}
                     >
                       {username}
@@ -494,59 +502,97 @@ export default function Home() {
                 <a
                   href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
                   target="_blank"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
                   style={{
-                    border: "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
                     color: "color-mix(in srgb, var(--accent) 90%, white)",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                    e.currentTarget.style.background =
+                      "color-mix(in srgb, var(--accent) 20%, transparent)";
                     e.currentTarget.style.color = "var(--accent)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
-                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                    e.currentTarget.style.color =
+                      "color-mix(in srgb, var(--accent) 90%, white)";
                   }}
+                  aria-label="YouTube"
                 >
-                  YouTube
+                  <FaYoutube className={iconClass} />
                 </a>
+
                 <a
                   href="https://twitter.com/iidontnoahthing"
                   target="_blank"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
                   style={{
-                    border: "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
                     color: "color-mix(in srgb, var(--accent) 90%, white)",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                    e.currentTarget.style.background =
+                      "color-mix(in srgb, var(--accent) 20%, transparent)";
                     e.currentTarget.style.color = "var(--accent)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
-                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                    e.currentTarget.style.color =
+                      "color-mix(in srgb, var(--accent) 90%, white)";
                   }}
+                  aria-label="Twitter / X"
                 >
-                  Twitter
+                  <FaXTwitter className={iconClass} />
                 </a>
+
+                <a
+                  href="https://en.pronouns.page/@idontnoahthing"
+                  target="_blank"
+                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
+                  style={{
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
+                    color: "color-mix(in srgb, var(--accent) 90%, white)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background =
+                      "color-mix(in srgb, var(--accent) 20%, transparent)";
+                    e.currentTarget.style.color = "var(--accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
+                    e.currentTarget.style.color =
+                      "color-mix(in srgb, var(--accent) 90%, white)";
+                  }}
+                  aria-label="Twitter / X"
+                >
+                  <img className={iconClass} src="img/favicon_pp.png" />
+                </a>
+
                 <Link
                   href="/archive"
                   target="_self"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-950/60 text-[11px] sm:text-xs transition"
+                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
                   style={{
-                    border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
                     color: "color-mix(in srgb, var(--accent) 90%, white)",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 25%, transparent)";
+                    e.currentTarget.style.background =
+                      "color-mix(in srgb, var(--accent) 25%, transparent)";
                     e.currentTarget.style.color = "var(--accent)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
-                    e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                    e.currentTarget.style.color =
+                      "color-mix(in srgb, var(--accent) 90%, white)";
                   }}
+                  aria-label="Archive"
                 >
-                  Archive
+                  <FolderOpen className={iconClass} />
                 </Link>
               </div>
             </header>
@@ -557,7 +603,8 @@ export default function Home() {
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 60%, transparent)";
+                  e.currentTarget.style.borderColor =
+                    "color-mix(in srgb, var(--accent) 60%, transparent)";
                   e.currentTarget.style.transform = "translateY(-4px) scale(1)";
                   e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
                 }}
@@ -571,13 +618,16 @@ export default function Home() {
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
-                    background: "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
+                    background:
+                      "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
                   }}
                 />
 
                 <div className="relative z-10 flex flex-col items-center">
                   {rawStatus === "offline" ? (
-                    <p className="text-sm sm:text-base text-slate-400">Offline</p>
+                    <p className="text-sm sm:text-base text-slate-400">
+                      Offline
+                    </p>
                   ) : activityName && activityImageUrl ? (
                     <>
                       <img
@@ -585,8 +635,10 @@ export default function Home() {
                         alt={activityName}
                         className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover mb-3"
                         style={{
-                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
-                          boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                          border:
+                            "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          boxShadow:
+                            "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
                         }}
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
@@ -594,7 +646,9 @@ export default function Home() {
                       />
                       <p
                         className="text-sm sm:text-base font-medium"
-                        style={{ color: "color-mix(in srgb, var(--accent) 90%, white)" }}
+                        style={{
+                          color: "color-mix(in srgb, var(--accent) 90%, white)",
+                        }}
                       >
                         {activityName}
                       </p>
@@ -602,7 +656,9 @@ export default function Home() {
                   ) : activityName ? (
                     <p
                       className="text-sm sm:text-base font-medium"
-                      style={{ color: "color-mix(in srgb, var(--accent) 90%, white)" }}
+                      style={{
+                        color: "color-mix(in srgb, var(--accent) 90%, white)",
+                      }}
                     >
                       {activityName}
                     </p>
@@ -619,7 +675,8 @@ export default function Home() {
               <section
                 className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 60%, transparent)";
+                  e.currentTarget.style.borderColor =
+                    "color-mix(in srgb, var(--accent) 60%, transparent)";
                   e.currentTarget.style.transform = "translateY(-4px) scale(1)";
                   e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
                 }}
@@ -632,7 +689,8 @@ export default function Home() {
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
-                    background: "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
+                    background:
+                      "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
                   }}
                 />
 
@@ -648,8 +706,10 @@ export default function Home() {
                         className="relative z-10 rounded-xl w-24 h-24 sm:w-28 sm:h-28 object-cover"
                         alt={musicData.album || "Album Art"}
                         style={{
-                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
-                          boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                          border:
+                            "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          boxShadow:
+                            "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
                         }}
                       />
                     )}
@@ -659,7 +719,8 @@ export default function Home() {
                           <span
                             className="bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap"
                             style={{
-                              backgroundImage: "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                              backgroundImage:
+                                "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
                             }}
                           >
                             {musicData.song}
@@ -675,10 +736,15 @@ export default function Home() {
                             }}
                           >
                             <div className="marqueeInner" aria-hidden>
-                              <span ref={marqueeTextRef} className="marqueeItem">
+                              <span
+                                ref={marqueeTextRef}
+                                className="marqueeItem"
+                              >
                                 {musicData.song}
                               </span>
-                              <span className="marqueeItem">{musicData.song}</span>
+                              <span className="marqueeItem">
+                                {musicData.song}
+                              </span>
                             </div>
                           </div>
                         )}
@@ -703,7 +769,8 @@ export default function Home() {
                               className="h-1.5 rounded-full transition-all duration-300"
                               style={{
                                 width: `${progress * 100}%`,
-                                background: "linear-gradient(to right, color-mix(in srgb, var(--accent) 70%, white), var(--accent))",
+                                background:
+                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 70%, white), var(--accent))",
                               }}
                             />
                           </div>
@@ -720,16 +787,20 @@ export default function Home() {
                         rel="noopener noreferrer"
                         className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-full bg-zinc-950/70 text-[11px] sm:text-xs transition"
                         style={{
-                          border: "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                          border:
+                            "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
                           color: "color-mix(in srgb, var(--accent) 90%, white)",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "color-mix(in srgb, var(--accent) 20%, transparent)";
+                          e.currentTarget.style.background =
+                            "color-mix(in srgb, var(--accent) 20%, transparent)";
                           e.currentTarget.style.color = "var(--accent)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "rgb(9 9 11 / 0.7)";
-                          e.currentTarget.style.color = "color-mix(in srgb, var(--accent) 90%, white)";
+                          e.currentTarget.style.background =
+                            "rgb(9 9 11 / 0.7)";
+                          e.currentTarget.style.color =
+                            "color-mix(in srgb, var(--accent) 90%, white)";
                         }}
                       >
                         View on Last.fm
