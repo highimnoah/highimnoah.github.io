@@ -194,7 +194,8 @@ export default function Home() {
           act &&
           ((act.type === 2 && act.name === "Apple Music") ||
             act.name === "Windows Media Player" ||
-            act.name === "Cider"),
+            act.name === "Cider" ||
+            act.name === "mprisence"),
       );
 
       if (applemusicActivity) {
