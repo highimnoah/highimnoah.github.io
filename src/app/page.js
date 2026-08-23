@@ -26,8 +26,6 @@ export default function Home() {
   const [preferredActivity, setPreferredActivity] = useState(null);
   const [gameDurationStr, setGameDurationStr] = useState("");
 
-  const backgroundImgRef = useRef(null);
-
   const formatForLastfm = (text) => {
     return text.replace(/\s+/g, "+");
   };
@@ -59,6 +57,11 @@ export default function Home() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
+  };
+
+  const getDisplayActivityName = (name) => {
+    if (name === "mprisence") return "AIMP";
+    return name || "";
   };
 
   const buildLocalIconPath = (title) => {
@@ -147,11 +150,13 @@ export default function Home() {
       }
 
       setPreferredActivity(prefAct);
-      setActivityText(prefAct ? prefAct.name : "—");
+      setActivityText(prefAct ? getDisplayActivityName(prefAct.name) : "—");
 
       if (prefAct) {
         const name = prefAct.name || "";
-        setActivityName(name);
+        const displayName = getDisplayActivityName(name);
+
+        setActivityName(displayName);
 
         let imgUrl = "";
 
@@ -366,101 +371,20 @@ export default function Home() {
     };
   }, [musicData?.song]);
 
-  function getLuminance(r, g, b) {
-    const [rs, gs, bs] = [r, g, b].map((c) => {
-      c /= 255;
-      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-    });
-    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
-  }
-
-  function lightenColor(r, g, b, targetLuminance = 0.4) {
-    let luminance = getLuminance(r, g, b);
-    if (luminance >= targetLuminance) return { r, g, b };
-
-    let factor = 1;
-    while (luminance < targetLuminance && factor < 10) {
-      factor += 0.1;
-      r = Math.min(255, Math.round(r * factor));
-      g = Math.min(255, Math.round(g * factor));
-      b = Math.min(255, Math.round(b * factor));
-      luminance = getLuminance(r, g, b);
-    }
-    return { r, g, b };
-  }
-
-  function getDominantColor(imgElement, callback) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const sampleSize = 50;
-
-    canvas.width = sampleSize;
-    canvas.height = sampleSize;
-
-    const process = () => {
-      ctx.drawImage(imgElement, 0, 0, sampleSize, sampleSize);
-      const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
-
-      const colorMap = {};
-      for (let i = 0; i < data.length; i += 4) {
-        const r = Math.round(data[i] / 32) * 32;
-        const g = Math.round(data[i + 1] / 32) * 32;
-        const b = Math.round(data[i + 2] / 32) * 32;
-        const a = data[i + 3];
-        if (a < 128) continue;
-        const key = `${r},${g},${b}`;
-        colorMap[key] = (colorMap[key] || 0) + 1;
-      }
-
-      const dominant = Object.entries(colorMap)
-        .sort((a, b) => b[1] - a[1])[0][0]
-        .split(",")
-        .map(Number);
-
-      let [r, g, b] = dominant;
-
-      const luminance = getLuminance(r, g, b);
-      if (luminance < 0.15) {
-        ({ r, g, b } = lightenColor(r, g, b, 0.35));
-      }
-
-      callback(`rgb(${r}, ${g}, ${b})`);
-    };
-
-    if (imgElement.complete && imgElement.naturalWidth > 0) {
-      process();
-    } else {
-      imgElement.addEventListener("load", process);
-    }
-  }
-
-  useEffect(() => {
-    const img = backgroundImgRef.current;
-    if (!img) return;
-
-    getDominantColor(img, (color) => {
-      document.documentElement.style.setProperty("--accent", color);
-    });
-  }, []);
-
   return (
     <>
-      <img
-        ref={backgroundImgRef}
-        className="fixed inset-0 w-full h-full object-cover -z-50"
-        src="/img/9902119.jpg"
-        id="background-img"
-      />
-
-      <main className="relative flex flex-col items-center justify-center min-h-screen bg-transparent text-slate-100 px-3 sm:px-6">
-        <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden backdrop-blur-sm bg-black/30 rounded-2xl p-3">
+      <main
+        className="relative flex flex-col items-center justify-center min-h-screen bg-[rgb(6,6,6)] text-slate-100 px-3 sm:px-6"
+        style={{ "--accent": "#F5A9B8" }}
+      >
+        <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden backdrop-blur-sm bg-black/30 rounded-sm p-3">
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
             <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
               <div className="flex items-center gap-4">
                 <img
                   src={avatarUrl}
                   alt="Avatar"
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm object-cover"
                   // ↓ border + shadow via inline style, da Tailwind keine CSS-Vars in border-color unterstützt
                   style={{
                     border:
@@ -503,7 +427,7 @@ export default function Home() {
                 <a
                   href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
                   target="_blank"
-                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
+                  className="p-1.5 sm:p-2 rounded-sm bg-zinc-950/60 transition"
                   style={{
                     border:
                       "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
@@ -527,7 +451,7 @@ export default function Home() {
                 <a
                   href="https://twitter.com/iidontnoahthing"
                   target="_blank"
-                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
+                  className="p-1.5 sm:p-2 rounded-sm bg-zinc-950/60 transition"
                   style={{
                     border:
                       "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
@@ -548,34 +472,10 @@ export default function Home() {
                   <FaXTwitter className={iconClass} />
                 </a>
 
-                <a
-                  href="https://en.pronouns.page/@idontnoahthing"
-                  target="_blank"
-                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
-                  style={{
-                    border:
-                      "1px solid color-mix(in srgb, var(--accent) 60%, transparent)",
-                    color: "color-mix(in srgb, var(--accent) 90%, white)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
-                      "color-mix(in srgb, var(--accent) 20%, transparent)";
-                    e.currentTarget.style.color = "var(--accent)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgb(9 9 11 / 0.6)";
-                    e.currentTarget.style.color =
-                      "color-mix(in srgb, var(--accent) 90%, white)";
-                  }}
-                  aria-label="Twitter / X"
-                >
-                  <img className={iconClass} src="img/favicon_pp.png" />
-                </a>
-
                 <Link
                   href="/archive"
                   target="_self"
-                  className="p-1.5 sm:p-2 rounded-full bg-zinc-950/60 transition"
+                  className="p-1.5 sm:p-2 rounded-sm bg-zinc-950/60 transition"
                   style={{
                     border:
                       "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
@@ -602,11 +502,11 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-0.5 sm:gap-6">
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
-                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
+                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor =
                     "color-mix(in srgb, var(--accent) 60%, transparent)";
-                  e.currentTarget.style.transform = "translateY(-4px) scale(1)";
+                  e.currentTarget.style.transform = "translateY(-2px) scale(1)";
                   e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
                 }}
                 onMouseLeave={(e) => {
@@ -634,7 +534,7 @@ export default function Home() {
                       <img
                         src={activityImageUrl}
                         alt={activityName}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover mb-3"
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm object-cover mb-3"
                         style={{
                           border:
                             "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
@@ -674,11 +574,11 @@ export default function Home() {
 
             <AnimatedContent distance={30} direction="vertical" duration={1}>
               <section
-                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
+                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor =
                     "color-mix(in srgb, var(--accent) 60%, transparent)";
-                  e.currentTarget.style.transform = "translateY(-4px) scale(1)";
+                  e.currentTarget.style.transform = "translateY(-2px) scale(1)";
                   e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
                 }}
                 onMouseLeave={(e) => {
@@ -704,7 +604,7 @@ export default function Home() {
                     {musicData.albumArtUrl && (
                       <img
                         src={musicData.albumArtUrl}
-                        className="relative z-10 rounded-xl w-24 h-24 sm:w-28 sm:h-28 object-cover"
+                        className="relative z-10 rounded-sm w-24 h-24 sm:w-28 sm:h-28 object-cover"
                         alt={musicData.album || "Album Art"}
                         style={{
                           border:
@@ -765,9 +665,9 @@ export default function Home() {
                           <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-left">
                             {formatTime(elapsed)}
                           </span>
-                          <div className="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="flex-1 bg-zinc-800 rounded-sm h-1.5 overflow-hidden">
                             <div
-                              className="h-1.5 rounded-full transition-all duration-300"
+                              className="h-1.5 rounded-sm transition-all duration-300"
                               style={{
                                 width: `${progress * 100}%`,
                                 background:
@@ -786,7 +686,7 @@ export default function Home() {
                         href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-full bg-zinc-950/70 text-[11px] sm:text-xs transition"
+                        className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-sm bg-zinc-950/70 text-[11px] sm:text-xs transition"
                         style={{
                           border:
                             "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",

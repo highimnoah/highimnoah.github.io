@@ -26,5 +26,10 @@
     "eslint-config-next": "15.3.4",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4"
+  },
+  "allowScripts": {
+    "@tailwindcss/oxide@4.1.10": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.9.2": true
   }
 }
