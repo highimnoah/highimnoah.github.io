@@ -518,10 +518,10 @@ export default function Home() {
                 {/* Radial glow mit accent */}
                 <div
                   className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
-                  }}
+                  // style={{
+                  //   background:
+                  //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
+                  // }}
                 />
 
                 <div className="relative z-10 flex flex-col items-center">
@@ -589,10 +589,10 @@ export default function Home() {
               >
                 <div
                   className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
-                  }}
+                  // style={{
+                  //   background:
+                  //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
+                  // }}
                 />
 
                 {musicData === undefined ? (

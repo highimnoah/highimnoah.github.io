@@ -88,10 +88,10 @@ export default function Archive() {
             <section className="relative overflow-hidden flex flex-col gap-4 p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm">
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
-                }}
+                // style={{
+                //   background:
+                //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
+                // }}
               />
 
               <div className="relative z-10 flex flex-col gap-2">
@@ -126,10 +126,10 @@ export default function Archive() {
             <section className="relative overflow-hidden rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm">
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%)",
-                }}
+                // style={{
+                //   background:
+                //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%)",
+                // }}
               />
 
               <div className="relative z-10 max-h-[55vh] sm:max-h-[60vh] overflow-y-auto">
@@ -182,10 +182,10 @@ export default function Archive() {
               <section className="relative overflow-hidden w-full max-w-sm p-5 sm:p-6 rounded-sm bg-zinc-950 border border-zinc-800 shadow-xl">
                 <div
                   className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%)",
-                  }}
+                  // style={{
+                  //   background:
+                  //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%)",
+                  // }}
                 />
 
                 <div className="relative z-10">
