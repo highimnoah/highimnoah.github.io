@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import "./font.css";
 import "./marquee.css";
@@ -10,19 +9,98 @@ import { FaYoutube } from "react-icons/fa6";
 import { FaXTwitter } from "react-icons/fa6";
 import { FolderOpen } from "lucide-react";
 
+// CSS für die rotierende Schallplatte (inline, damit keine extra Datei nötig ist)
+const vinylCss = `
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.vinyl-disc {
+  position: relative;
+  width: 9.5rem;
+  height: 9.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.10), transparent 42%),
+    repeating-radial-gradient(circle at center, #0b0b0c 0px, #0b0b0c 1.5px, #17171a 1.5px, #17171a 3px);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 0 14px rgba(0, 0, 0, 0.85);
+  animation: vinylSpin 7s linear infinite;
+}
+
+.vinyl-disc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 15deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.08) 22deg,
+    transparent 55deg,
+    transparent 175deg,
+    rgba(255, 255, 255, 0.05) 200deg,
+    transparent 235deg
+  );
+  pointer-events: none;
+}
+
+.vinyl-label {
+  width: 58%;
+  height: 58%;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 3px solid rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.vinyl-label-empty {
+  background: radial-gradient(circle at 35% 35%, #2a2a2e, #101012 70%);
+}
+
+.vinyl-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: #060606;
+  border: 2px solid #333;
+  z-index: 2;
+}
+
+@media (min-width: 640px) {
+  .vinyl-disc {
+    width: 11rem;
+    height: 11rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-disc {
+    animation: none;
+  }
+}
+`;
+
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
   const [avatarUrl, setAvatarUrl] = useState("/placeholder.png");
   const [statusClass, setStatusClass] = useState("status-offline");
   const [statusText, setStatusText] = useState("");
   const [activityText, setActivityText] = useState("—");
-
   const [rawStatus, setRawStatus] = useState("offline");
   const [activityName, setActivityName] = useState("");
   const [activityImageUrl, setActivityImageUrl] = useState("");
-
   const [musicData, setMusicData] = useState(undefined);
-
   const [preferredActivity, setPreferredActivity] = useState(null);
   const [gameDurationStr, setGameDurationStr] = useState("");
 
@@ -31,9 +109,7 @@ export default function Home() {
   };
 
   const socketRef = useRef(null);
-
   const userId = "619810098465734666";
-
   const statusColors = {
     online: "status-online",
     idle: "status-idle",
@@ -74,7 +150,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!musicData?.start || !musicData?.end) return;
-
     const updateProgress = () => {
       const now = Date.now();
       const total = musicData.end - musicData.start;
@@ -83,7 +158,6 @@ export default function Home() {
       setElapsed(Math.min(passed, total));
       setDuration(total);
     };
-
     updateProgress();
     const interval = setInterval(updateProgress, 1000);
     return () => clearInterval(interval);
@@ -155,20 +229,17 @@ export default function Home() {
       if (prefAct) {
         const name = prefAct.name || "";
         const displayName = getDisplayActivityName(name);
-
         setActivityName(displayName);
 
         let imgUrl = "";
-
         if (name === "Apple Music") {
           imgUrl = buildLocalIconPath(name);
         } else {
-          let assetKey = (prefAct.assets && prefAct.assets.large_image) || "";
-
-          if (assetKey) {
+          const assetKey = (prefAct.assets && prefAct.assets.large_image) || "";
+          // "spotify:"-URIs lassen sich nicht direkt als Bild laden
+          if (assetKey && !assetKey.startsWith("spotify:")) {
             const indicator = "/https/";
             const idx = assetKey.indexOf(indicator);
-
             if (idx !== -1) {
               imgUrl = "https://" + assetKey.substring(idx + indicator.length);
             } else if (assetKey.startsWith("https://")) {
@@ -182,74 +253,89 @@ export default function Home() {
                 ".png";
             }
           }
-
           if (!imgUrl && name) {
             imgUrl = buildLocalIconPath(name);
           }
         }
-
         setActivityImageUrl(imgUrl || "");
       } else {
         setActivityName("");
         setActivityImageUrl("");
       }
 
-      const applemusicActivity = activities.find(
-        (act) =>
-          act &&
-          ((act.type === 2 && act.name === "Apple Music") ||
-            act.name === "Windows Media Player" ||
-            act.name === "Cider" ||
-            act.name === "mprisence"),
-      );
-
-      if (applemusicActivity) {
-        const song = applemusicActivity.details;
-        let artist = "";
-        let album = "";
-
-        if (
-          applemusicActivity.state &&
-          applemusicActivity.state.includes("—")
-        ) {
-          const artistFull = applemusicActivity.state;
-          const parts = artistFull.split("—");
-          if (parts.length >= 2) {
-            artist = parts[0].trim();
-            album = parts.slice(1).join("—").trim();
-          }
-        } else {
-          artist = applemusicActivity.state;
-          album =
-            (applemusicActivity.assets &&
-              applemusicActivity.assets.large_text) ||
-            "";
-        }
-
-        let albumArtUrl = "";
-        if (
-          applemusicActivity.assets &&
-          applemusicActivity.assets.large_image
-        ) {
-          var rawImageUrl = applemusicActivity.assets.large_image;
-          var indicator2 = "/https/";
-          var idx2 = rawImageUrl.indexOf(indicator2);
-          if (idx2 !== -1)
-            albumArtUrl = "https://" + rawImageUrl.substring(idx2 + 7);
-          else if (rawImageUrl.startsWith("https://"))
-            albumArtUrl = rawImageUrl;
-        }
-
-        const start =
-          applemusicActivity.timestamps && applemusicActivity.timestamps.start;
-        const end =
-          applemusicActivity.timestamps && applemusicActivity.timestamps.end;
-
-        if (song && artist) {
-          setMusicData({ song, artist, album, albumArtUrl, start, end });
-        }
+      // ------------------------------------------------------------------
+      // MUSIK-ERKENNUNG
+      // 1) Spotify: Lanyard liefert ein eigenes Objekt mit sauberem Cover
+      // 2) Jeder andere Player: jegliche Aktivität mit type === 2
+      //    (Discord-Typ 2 = "Listening") wird als Musik erkannt.
+      // 3) Fallback: deine bisher explizit erlaubten Player, falls sie
+      //    den Typ mal nicht korrekt melden.
+      // ------------------------------------------------------------------
+      const spotify = presence.listening_to_spotify;
+      if (spotify && spotify.song) {
+        setMusicData({
+          song: spotify.song,
+          artist: spotify.artist || "",
+          album: spotify.album || "",
+          albumArtUrl: spotify.album_art_url || "",
+          start: spotify.timestamps ? spotify.timestamps.start : undefined,
+          end: spotify.timestamps ? spotify.timestamps.end : undefined,
+        });
       } else {
-        setMusicData(null);
+        const musicActivity =
+          activities.find((act) => act && act.type === 2) ||
+          activities.find(
+            (act) =>
+              act &&
+              (act.name === "Apple Music" ||
+                act.name === "Windows Media Player" ||
+                act.name === "Cider" ||
+                act.name === "mprisence"),
+          );
+
+        if (musicActivity && musicActivity.details) {
+          const song = musicActivity.details;
+          let artist = "";
+          let album = "";
+
+          if (musicActivity.state && musicActivity.state.includes("—")) {
+            const artistFull = musicActivity.state;
+            const parts = artistFull.split("—");
+            if (parts.length >= 2) {
+              artist = parts[0].trim();
+              album = parts.slice(1).join("—").trim();
+            }
+          } else {
+            artist = musicActivity.state || "";
+            album =
+              (musicActivity.assets && musicActivity.assets.large_text) || "";
+          }
+
+          let albumArtUrl = "";
+          const rawImageUrl =
+            musicActivity.assets && musicActivity.assets.large_image;
+          if (rawImageUrl) {
+            const indicator = "/https/";
+            const idx = rawImageUrl.indexOf(indicator);
+            if (idx !== -1) {
+              albumArtUrl =
+                "https://" + rawImageUrl.substring(idx + indicator.length);
+            } else if (rawImageUrl.startsWith("https://")) {
+              albumArtUrl = rawImageUrl;
+            }
+          }
+
+          setMusicData({
+            song,
+            artist,
+            album,
+            albumArtUrl,
+            start: musicActivity.timestamps && musicActivity.timestamps.start,
+            end: musicActivity.timestamps && musicActivity.timestamps.end,
+          });
+        } else {
+          setMusicData(null);
+        }
       }
     };
 
@@ -284,7 +370,6 @@ export default function Home() {
         socketRef.current.send(JSON.stringify({ op: 3 }));
       }
     }, 30000);
-
     return () => clearInterval(heartbeat);
   }, []);
 
@@ -304,6 +389,7 @@ export default function Home() {
 
   const marqueeContainerRef = useRef(null);
   const marqueeTextRef = useRef(null);
+  const plainTitleRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [marqueeVars, setMarqueeVars] = useState({
     total: 0,
@@ -317,13 +403,14 @@ export default function Home() {
     let mounted = true;
 
     const compute = () => {
-      const container = marqueeContainerRef.current;
-      const text = marqueeTextRef.current;
+      // Marquee-Ref hat Vorrang, sonst den normalen Songtitel messen
+      const text = marqueeTextRef.current || plainTitleRef.current;
+      const container =
+        marqueeContainerRef.current || (text ? text.parentElement : null);
       if (!container || !text) {
         setIsOverflowing(false);
         return;
       }
-
       const containerWidth = container.getBoundingClientRect().width;
       const textWidth = text.getBoundingClientRect().width;
 
@@ -332,7 +419,6 @@ export default function Home() {
         const total = textWidth + gap;
         const speed = 100;
         const duration = Math.max(6, total / speed);
-
         if (mounted) {
           setMarqueeVars({ total, duration, gap });
           setIsOverflowing(true);
@@ -357,6 +443,7 @@ export default function Home() {
       ro = new ResizeObserver(delayedCompute);
       if (marqueeContainerRef.current) ro.observe(marqueeContainerRef.current);
       if (marqueeTextRef.current) ro.observe(marqueeTextRef.current);
+      if (plainTitleRef.current) ro.observe(plainTitleRef.current);
     } catch (e) {}
 
     const imgs = document.querySelectorAll(".relative.z-10 img");
@@ -373,6 +460,7 @@ export default function Home() {
 
   return (
     <>
+      <style>{vinylCss}</style>
       <main
         className="relative flex flex-col items-center justify-center min-h-screen bg-[rgb(6,6,6)] text-slate-100 px-3 sm:px-6"
         style={{ "--accent": "#F5A9B8" }}
@@ -385,7 +473,6 @@ export default function Home() {
                   src={avatarUrl}
                   alt="Avatar"
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm object-cover"
-                  // ↓ border + shadow via inline style, da Tailwind keine CSS-Vars in border-color unterstützt
                   style={{
                     border:
                       "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
@@ -405,7 +492,6 @@ export default function Home() {
                       {username}
                     </span>
                   </h1>
-
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mt-1">
                     <span className={statusClass}></span>
                     <span
@@ -422,7 +508,6 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-
               <div className="flex gap-2 sm:gap-3">
                 <a
                   href="https://www.youtube.com/@iidontnoahthing?sub_confirmation=1"
@@ -447,7 +532,6 @@ export default function Home() {
                 >
                   <FaYoutube className={iconClass} />
                 </a>
-
                 <a
                   href="https://twitter.com/iidontnoahthing"
                   target="_blank"
@@ -471,7 +555,6 @@ export default function Home() {
                 >
                   <FaXTwitter className={iconClass} />
                 </a>
-
                 <Link
                   href="/archive"
                   target="_self"
@@ -499,52 +582,57 @@ export default function Home() {
             </header>
           </AnimatedContent>
 
-          <div className="grid grid-cols-2 gap-0.5 sm:gap-6">
-            <AnimatedContent distance={30} direction="vertical" duration={1}>
-              <section
-                className="relative overflow-hidden flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor =
-                    "color-mix(in srgb, var(--accent) 60%, transparent)";
-                  e.currentTarget.style.transform = "translateY(-2px) scale(1)";
-                  e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "";
-                  e.currentTarget.style.transform = "";
-                  e.currentTarget.style.background = "";
-                }}
-              >
-                {/* Radial glow mit accent */}
-                <div
-                  className="pointer-events-none absolute inset-0"
-                  // style={{
-                  //   background:
-                  //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%)",
-                  // }}
-                />
-
-                <div className="relative z-10 flex flex-col items-center">
-                  {rawStatus === "offline" ? (
-                    <p className="text-sm sm:text-base text-slate-400">
-                      Offline
-                    </p>
-                  ) : activityName && activityImageUrl ? (
-                    <>
-                      <img
-                        src={activityImageUrl}
-                        alt={activityName}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm object-cover mb-3"
-                        style={{
-                          border:
-                            "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
-                          boxShadow:
-                            "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
+          <div className="grid grid-cols-2 items-stretch gap-0.5 sm:gap-6">
+            <div className="h-full min-w-0 [&>*]:h-full">
+              <AnimatedContent distance={30} direction="vertical" duration={1}>
+                <section
+                  className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm h-[420px] sm:h-[460px] w-full min-w-0 transition-all duration-200"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor =
+                      "color-mix(in srgb, var(--accent) 60%, transparent)";
+                    e.currentTarget.style.transform =
+                      "translateY(-2px) scale(1)";
+                    e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.transform = "";
+                    e.currentTarget.style.background = "";
+                  }}
+                >
+                  <div className="pointer-events-none absolute inset-0" />
+                  <div className="relative z-10 flex flex-col items-center">
+                    {rawStatus === "offline" ? (
+                      <p className="text-sm sm:text-base text-slate-400">
+                        Offline
+                      </p>
+                    ) : activityName && activityImageUrl ? (
+                      <>
+                        <img
+                          src={activityImageUrl}
+                          alt={activityName}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm object-cover mb-3"
+                          style={{
+                            border:
+                              "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                            boxShadow:
+                              "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        <p
+                          className="text-sm sm:text-base font-medium"
+                          style={{
+                            color:
+                              "color-mix(in srgb, var(--accent) 90%, white)",
+                          }}
+                        >
+                          {activityName}
+                        </p>
+                      </>
+                    ) : activityName ? (
                       <p
                         className="text-sm sm:text-base font-medium"
                         style={{
@@ -553,137 +641,139 @@ export default function Home() {
                       >
                         {activityName}
                       </p>
-                    </>
-                  ) : activityName ? (
-                    <p
-                      className="text-sm sm:text-base font-medium"
-                      style={{
-                        color: "color-mix(in srgb, var(--accent) 90%, white)",
-                      }}
-                    >
-                      {activityName}
-                    </p>
-                  ) : (
-                    <p className="text-sm sm:text-base text-slate-400">
-                      No activity detected.
-                    </p>
-                  )}
-                </div>
-              </section>
-            </AnimatedContent>
-
-            <AnimatedContent distance={30} direction="vertical" duration={1}>
-              <section
-                className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm min-h-[328px] transition-all duration-200 scale-[0.85] sm:scale-100"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor =
-                    "color-mix(in srgb, var(--accent) 60%, transparent)";
-                  e.currentTarget.style.transform = "translateY(-2px) scale(1)";
-                  e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "";
-                  e.currentTarget.style.transform = "";
-                  e.currentTarget.style.background = "";
-                }}
-              >
-                <div
-                  className="pointer-events-none absolute inset-0"
-                  // style={{
-                  //   background:
-                  //     "radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%)",
-                  // }}
-                />
-
-                {musicData === undefined ? (
-                  <p className="relative z-10 text-sm text-slate-400">
-                    Fetching currently playing track...
-                  </p>
-                ) : musicData ? (
-                  <>
-                    {musicData.albumArtUrl && (
-                      <img
-                        src={musicData.albumArtUrl}
-                        className="relative z-10 rounded-sm w-24 h-24 sm:w-28 sm:h-28 object-cover"
-                        alt={musicData.album || "Album Art"}
-                        style={{
-                          border:
-                            "1px solid color-mix(in srgb, var(--accent) 70%, transparent)",
-                          boxShadow:
-                            "0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent)",
-                        }}
-                      />
-                    )}
-                    <div className="relative z-10 text-center w-full px-4">
-                      <h2 className="text-md sm:text-lg font-semibold overflow-hidden">
-                        {!isOverflowing ? (
-                          <span
-                            className="bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap"
-                            style={{
-                              backgroundImage:
-                                "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
-                            }}
-                          >
-                            {musicData.song}
-                          </span>
-                        ) : (
-                          <div
-                            ref={marqueeContainerRef}
-                            className="marquee w-full overflow-hidden"
-                            style={{
-                              "--gap": `${marqueeVars.gap}px`,
-                              "--duration": `${marqueeVars.duration}s`,
-                              "--total": `${marqueeVars.total}px`,
-                            }}
-                          >
-                            <div className="marqueeInner" aria-hidden>
-                              <span
-                                ref={marqueeTextRef}
-                                className="marqueeItem"
-                              >
-                                {musicData.song}
-                              </span>
-                              <span className="marqueeItem">
-                                {musicData.song}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </h2>
-                      {musicData.album && (
-                        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                          {musicData.album}
-                        </p>
-                      )}
-                      <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                        {musicData.artist}
+                    ) : (
+                      <p className="text-sm sm:text-base text-slate-400">
+                        No activity detected.
                       </p>
-                    </div>
-                    {musicData.start && musicData.end && (
-                      <div className="relative z-10 w-full flex flex-col mt-2 px-4">
-                        <div className="flex items-center gap-2 w-full">
-                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-left">
-                            {formatTime(elapsed)}
-                          </span>
-                          <div className="flex-1 bg-zinc-800 rounded-sm h-1.5 overflow-hidden">
-                            <div
-                              className="h-1.5 rounded-sm transition-all duration-300"
-                              style={{
-                                width: `${progress * 100}%`,
-                                background:
-                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 70%, white), var(--accent))",
-                              }}
+                    )}
+                  </div>
+                </section>
+              </AnimatedContent>
+            </div>
+
+            <div className="h-full min-w-0 [&>*]:h-full">
+              <AnimatedContent distance={30} direction="vertical" duration={1}>
+                <section
+                  className="relative overflow-hidden flex flex-col items-center justify-center gap-3 text-center p-4 sm:p-5 rounded-sm bg-zinc-950/80 border border-zinc-800 shadow-md backdrop-blur-sm h-[420px] sm:h-[460px] w-full min-w-0 transition-all duration-200"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor =
+                      "color-mix(in srgb, var(--accent) 60%, transparent)";
+                    e.currentTarget.style.transform =
+                      "translateY(-2px) scale(1)";
+                    e.currentTarget.style.background = "rgb(24 24 27 / 0.9)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.transform = "";
+                    e.currentTarget.style.background = "";
+                  }}
+                >
+                  <div className="pointer-events-none absolute inset-0" />
+
+                  {musicData === undefined ? (
+                    <p className="relative z-10 text-sm text-slate-400">
+                      Fetching currently playing track...
+                    </p>
+                  ) : musicData ? (
+                    <>
+                      {/* Rotierende Schallplatte mit Cover als Label */}
+                      <div className="relative z-10">
+                        <div
+                          className="vinyl-disc"
+                          style={{
+                            animationPlayState:
+                              musicData.start && musicData.end
+                                ? "running"
+                                : "paused",
+                          }}
+                        >
+                          {musicData.albumArtUrl ? (
+                            <img
+                              src={musicData.albumArtUrl}
+                              className="vinyl-label"
+                              alt={musicData.album || "Album Art"}
                             />
-                          </div>
-                          <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-right">
-                            {formatTime(duration)}
-                          </span>
+                          ) : (
+                            <div className="vinyl-label vinyl-label-empty" />
+                          )}
+                          <div className="vinyl-hole" />
                         </div>
                       </div>
-                    )}
-                    {musicData && (
+
+                      <div className="relative z-10 text-center w-full px-4">
+                        <h2 className="text-md sm:text-lg font-semibold overflow-hidden">
+                          {!isOverflowing ? (
+                            <span
+                              ref={plainTitleRef}
+                              className="bg-clip-text text-transparent overflow-x-hidden whitespace-nowrap"
+                              style={{
+                                backgroundImage:
+                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                              }}
+                            >
+                              {musicData.song}
+                            </span>
+                          ) : (
+                            <div
+                              ref={marqueeContainerRef}
+                              className="marquee w-full overflow-hidden"
+                              style={{
+                                "--gap": `${marqueeVars.gap}px`,
+                                "--duration": `${marqueeVars.duration}s`,
+                                "--total": `${marqueeVars.total}px`,
+                              }}
+                            >
+                              <div className="marqueeInner" aria-hidden>
+                                <span
+                                  ref={marqueeTextRef}
+                                  className="marqueeItem"
+                                >
+                                  {musicData.song}
+                                </span>
+                                <span className="marqueeItem">
+                                  {musicData.song}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </h2>
+                        {musicData.album && (
+                          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                            {musicData.album}
+                          </p>
+                        )}
+                        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                          {musicData.artist}
+                        </p>
+                      </div>
+
+                      {musicData.start && musicData.end && (
+                        <div className="relative z-10 w-full flex flex-col mt-2 px-4">
+                          <div className="flex items-center gap-2 w-full">
+                            <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-left">
+                              {formatTime(elapsed)}
+                            </span>
+                            <div className="flex-1 bg-zinc-800 rounded-sm h-1.5 overflow-hidden">
+                              <div
+                                className="h-1.5 rounded-sm transition-all duration-300"
+                                style={{
+                                  width: `${progress * 100}%`,
+                                  background:
+                                    "linear-gradient(to right, color-mix(in srgb, var(--accent) 70%, white), var(--accent))",
+                                }}
+                              />
+                            </div>
+                            <span className="text-[10px] sm:text-xs text-slate-500 font-['Geist_Mono',monospace] w-7 text-right">
+                              {formatTime(duration)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
                       <a
-                        href={`https://www.last.fm/music/${formatForLastfm(musicData.artist)}/_/${formatForLastfm(musicData.song)}`}
+                        href={`https://www.last.fm/music/${formatForLastfm(
+                          musicData.artist,
+                        )}/_/${formatForLastfm(musicData.song)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="relative z-10 mt-3 px-3 sm:px-4 py-1.5 rounded-sm bg-zinc-950/70 text-[11px] sm:text-xs transition"
@@ -706,15 +796,15 @@ export default function Home() {
                       >
                         View on Last.fm
                       </a>
-                    )}
-                  </>
-                ) : (
-                  <p className="relative z-10 text-sm text-slate-400 text-center">
-                    Not listening to anything right now.
-                  </p>
-                )}
-              </section>
-            </AnimatedContent>
+                    </>
+                  ) : (
+                    <p className="relative z-10 text-sm text-slate-400 text-center">
+                      Not listening to anything right now.
+                    </p>
+                  )}
+                </section>
+              </AnimatedContent>
+            </div>
           </div>
         </div>
       </main>
