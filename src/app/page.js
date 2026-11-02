@@ -91,6 +91,22 @@ const vinylCss = `
 }
 `;
 
+const MUSIC_ACTIVITY_NAMES = new Set([
+  "Apple Music",
+  "Windows Media Player",
+  "Cider",
+  "mprisence",
+  "Feishin",
+  "Spotify",
+]);
+
+const isMusicLikeActivity = (activity) => {
+  if (!activity) return false;
+
+  // Discord activity type 2 = Listening
+  return activity.type === 2 || MUSIC_ACTIVITY_NAMES.has(activity.name);
+};
+
 export default function Home() {
   const [username, setUsername] = useState("Loading...");
   const [avatarUrl, setAvatarUrl] = useState("/placeholder.png");
@@ -103,6 +119,7 @@ export default function Home() {
   const [musicData, setMusicData] = useState(undefined);
   const [preferredActivity, setPreferredActivity] = useState(null);
   const [gameDurationStr, setGameDurationStr] = useState("");
+  const [hasNonMusicActivity, setHasNonMusicActivity] = useState(false);
 
   const formatForLastfm = (text) => {
     return text.replace(/\s+/g, "+");
@@ -211,7 +228,12 @@ export default function Home() {
           act.type !== 6,
       );
 
+      setHasNonMusicActivity(
+        nonCustomActivities.some((act) => !isMusicLikeActivity(act)),
+      );
+
       let prefAct = null;
+
       for (const act of nonCustomActivities) {
         if (
           !prefAct ||
@@ -387,6 +409,9 @@ export default function Home() {
 
   const isUsernameLoading = username === "Loading...";
 
+  const showListeningInHeader =
+    rawStatus !== "offline" && Boolean(musicData?.song && !hasNonMusicActivity);
+
   const marqueeContainerRef = useRef(null);
   const marqueeTextRef = useRef(null);
   const plainTitleRef = useRef(null);
@@ -502,9 +527,39 @@ export default function Home() {
                     </span>
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-400/80">
-                    {preferredActivity?.type === 0 && gameDurationStr
-                      ? `${activityText} for ${gameDurationStr}`
-                      : activityText}
+                    {showListeningInHeader ? (
+                      <>
+                        Listening to{" "}
+                        <span
+                          className="font-medium bg-clip-text text-transparent"
+                          style={{
+                            backgroundImage:
+                              "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                          }}
+                        >
+                          {musicData.song}
+                        </span>
+                        {musicData.artist ? (
+                          <>
+                            {" "}
+                            by{" "}
+                            <span
+                              className="font-medium bg-clip-text text-transparent"
+                              style={{
+                                backgroundImage:
+                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                              }}
+                            >
+                              {musicData.artist}
+                            </span>
+                          </>
+                        ) : null}
+                      </>
+                    ) : preferredActivity?.type === 0 && gameDurationStr ? (
+                      `${activityText} for ${gameDurationStr}`
+                    ) : (
+                      activityText
+                    )}
                   </p>
                 </div>
               </div>
