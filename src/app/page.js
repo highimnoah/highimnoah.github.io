@@ -816,7 +816,7 @@ export default function Home() {
                     </>
                   ) : (
                     <p className="relative z-10 text-sm text-slate-400 text-center">
-                      Not listening to anything right now.
+                      Not listening to anything right now
                     </p>
                   )}
                 </section>
