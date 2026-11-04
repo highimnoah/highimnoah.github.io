@@ -513,7 +513,7 @@ export default function Home() {
       <style>{cdCss}</style>
       <main
         className="relative flex flex-col items-center justify-center min-h-screen bg-[rgb(6,6,6)] text-slate-100 px-3 sm:px-6"
-        style={{ "--accent": "#F5A9B8" }}
+        style={{ "--accent": "#9d85f4" }}
       >
         <div className="relative z-10 flex flex-col gap-6 sm:gap-8 w-full max-w-4xl overflow-y-hidden backdrop-blur-sm bg-black/30 rounded-sm p-3">
           <AnimatedContent distance={20} direction="vertical" duration={0.9}>
@@ -559,7 +559,7 @@ export default function Home() {
                           className="font-medium bg-clip-text text-transparent"
                           style={{
                             backgroundImage:
-                              "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                              "linear-gradient(to right, color-mix(in srgb, var(--accent) 80%, white), var(--accent))",
                           }}
                         >
                           {musicData.song}
@@ -572,7 +572,7 @@ export default function Home() {
                               className="font-medium bg-clip-text text-transparent"
                               style={{
                                 backgroundImage:
-                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 60%, white), var(--accent))",
+                                  "linear-gradient(to right, color-mix(in srgb, var(--accent) 80%, white), var(--accent))",
                               }}
                             >
                               {musicData.artist}
